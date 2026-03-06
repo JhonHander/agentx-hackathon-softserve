@@ -1,4 +1,7 @@
 import { INVALID_PAYLOAD } from '../../../../lib/util/httpStatus.js';
+import { getValueSync } from '../../../../lib/util/registry.js';
+import { EvershopRequest } from '../../../../types/request.js';
+import { EvershopResponse } from '../../../../types/response.js';
 import { getAjv } from '../../services/getAjv.js';
 import markSkipEscape from '../../services/markSkipEscape.js';
 
@@ -10,7 +13,7 @@ ajv.addKeyword({
   modifying: true,
   compile(sch, parentSchema) {
     return (data, t) => {
-      if (parentSchema.type === 'string' && sch === true) {
+      if (sch === true) {
         // Mark the data as skip escape
         markSkipEscape(t.rootData, t.instancePath);
         return true;
@@ -21,11 +24,15 @@ ajv.addKeyword({
   }
 });
 
-export default (request, response, next) => {
+export default (request: EvershopRequest, response: EvershopResponse, next) => {
   // Get the current route
   const { currentRoute } = request;
   // Get the payload schema
-  const { payloadSchema } = currentRoute;
+  const payloadSchema = getValueSync(
+    'payloadSchema',
+    currentRoute.payloadSchema,
+    { route: currentRoute }
+  );
   if (!payloadSchema) {
     next();
   } else {

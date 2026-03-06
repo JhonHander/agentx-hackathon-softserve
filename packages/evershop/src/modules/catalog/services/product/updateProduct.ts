@@ -18,6 +18,7 @@ import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import type { ProductAttributeData, ProductData, ProductInventoryData } from './createProduct.js';
 import productDataSchema from './productDataSchema.json' with { type: 'json' };
@@ -375,6 +376,10 @@ async function updateProduct(uuid: string, data: ProductData, context: Record<st
     // Validate product data
     validateProductDataBeforeUpdate(productData);
 
+    // Sanitize the description
+    if (productData.description) {
+      sanitizeRawHtml(productData.description);
+    }
     // Insert product data
     const product = await hookable(updateProductData, {
       ...context,

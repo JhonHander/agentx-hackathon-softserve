@@ -1,6 +1,12 @@
+import { EvershopRequest } from '../../../../types/request.js';
 import isErrorHandlerTriggered from '../../../../lib/middleware/isErrorHandlerTriggered.js';
+import { EvershopResponse } from '../../../../types/response.js';
 
-export default async (request, response, next) => {
+export default async (
+  request: EvershopRequest,
+  response: EvershopResponse,
+  next
+) => {
   try {
     /** If a rejected middleware called next(error) without throwing an error */
     if (isErrorHandlerTriggered(response)) {

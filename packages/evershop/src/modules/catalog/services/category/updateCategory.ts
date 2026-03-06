@@ -6,13 +6,13 @@ import {
   update
 } from '@evershop/postgres-query-builder';
 import type { PoolClient } from '@evershop/postgres-query-builder';
-import { JSONSchemaType } from 'ajv';
 import { getConnection } from '../../../../lib/postgres/connection.js';
 import { hookable } from '../../../../lib/util/hookable.js';
 import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import categoryDataSchema from './categoryDataSchema.json' with { type: 'json' };
 import { CategoryData } from './createCategory.js';
@@ -89,6 +89,9 @@ async function updateCategory(uuid: string, data: CategoryData, context: Record<
     // Validate category data
     validateCategoryDataBeforeInsert(categoryData);
 
+    if (categoryData.description) {
+      sanitizeRawHtml(categoryData.description);
+    }
     // Insert category data
     const category = await hookable(updateCategoryData, {
       ...context,

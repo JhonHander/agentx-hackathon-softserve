@@ -11,13 +11,14 @@ import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import pageDataSchema from './pageDataSchema.json' with { type: 'json' };
 
 function validatePageDataBeforeInsert(data) {
   const ajv = getAjv();
   pageDataSchema.required = ['status'];
-  const jsonSchema = getValueSync('updatePageDataJsonSchema', pageDataSchema);
+  const jsonSchema = getValueSync('updatePageDataJsonSchema', pageDataSchema, {});
   const validate = ajv.compile(jsonSchema);
   const valid = validate(data);
   if (valid) {
@@ -78,6 +79,10 @@ async function updatePage(uuid, data, context) {
     const pageData = await getValue('pageDataBeforeUpdate', data);
     // Validate page data
     validatePageDataBeforeInsert(pageData);
+    // Sanitize raw HTML blocks in EditorJS content
+    if (pageData.content) {
+      sanitizeRawHtml(pageData.content);
+    }
 
     // Insert page data
     const page = await hookable(updatePageData, { ...context, connection })(
