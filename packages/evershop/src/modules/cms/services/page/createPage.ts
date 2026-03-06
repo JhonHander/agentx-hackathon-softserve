@@ -10,6 +10,7 @@ import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import pageDataSchema from './pageDataSchema.json' with { type: 'json' };
 
@@ -22,7 +23,7 @@ function validatePageDataBeforeInsert(data) {
     'content',
     'meta_title'
   ];
-  const jsonSchema = getValueSync('createPageDataJsonSchema', pageDataSchema);
+  const jsonSchema = getValueSync('createPageDataJsonSchema', pageDataSchema, {});
   const validate = ajv.compile(jsonSchema);
   const valid = validate(data);
   if (valid) {
@@ -57,7 +58,10 @@ async function createPage(data, context) {
     const pageData = await getValue('pageDataBeforeCreate', data);
     // Validate page data
     validatePageDataBeforeInsert(pageData);
-
+// Sanitize raw HTML blocks in EditorJS content
+    if (pageData.content) {
+      sanitizeRawHtml(pageData.content);
+    }
     // Insert page data
     const page = await hookable(insertPageData, { ...context, connection })(
       pageData,

@@ -28,26 +28,6 @@ export default {
       }
       try {
         const json = JSON.parse(description);
-        // Loop through each row and find the columns with raw block type. Use dompurify to sanitize the HTML content.
-        json.forEach((row: any) => {
-          row.columns.forEach((column: any) => {
-            column.data.blocks.forEach((block: any) => {
-              if (block.type === 'raw' && block.data.html) {
-                const replacements = {
-                  '&lt;': '<',
-                  '&gt;': '>'
-                };
-                const jsonText = block.data.html
-                  ? block.data.html.replace(
-                      /&lt;|&gt;/g,
-                      (match) => replacements[match]
-                    )
-                  : '';
-                block.data.html = sanitizeHtml(jsonText);
-              }
-            });
-          });
-        });
         return json;
       } catch (e) {
         // This is for backward compatibility. If the description is not a JSON string then it is a raw HTML block

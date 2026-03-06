@@ -1,24 +1,9 @@
 {
   "type": "object",
   "properties": {
-    "status": {
-      "type": ["string", "integer"],
-      "enum": ["0", "1", 0, 1],
-      "errorMessage": {
-        "type": "Status must be a string or number",
-        "enum": "Status must be either 0, 1, '0', or '1'"
-      }
-    },
-    "name": {
-      "type": "string",
-      "minLength": 1,
-      "errorMessage": {
-        "type": "Page name must be a string",
-        "minLength": "Page name is required and cannot be empty"
-      }
-    },
     "content": {
       "type": "array",
+      "skipEscape": true,
       "items": {
         "type": "object",
         "properties": {
@@ -85,39 +70,7 @@
       "errorMessage": {
         "type": "Content must be an array"
       }
-    },
-    "url_key": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-      "minLength": 1,
-      "maxLength": 255,
-      "errorMessage": {
-        "type": "URL key must be a string",
-        "pattern": "URL key must contain only lowercase letters, numbers, and hyphens (e.g., 'my-product-name')",
-        "minLength": "URL key cannot be empty",
-        "maxLength": "URL key cannot exceed 255 characters"
-      }
-    },
-    "meta_title": {
-      "type": "string",
-      "errorMessage": {
-        "type": "Meta title must be a string"
-      }
-    },
-    "meta_description": {
-      "type": "string",
-      "errorMessage": {
-        "type": "Meta description must be a string"
-      }
     }
   },
-  "additionalProperties": true,
-  "required": [
-    "status",
-    "name",
-    "content",
-    "url_key",
-    "meta_title",
-    "meta_description"
-  ]
+  "additionalProperties": true
 }

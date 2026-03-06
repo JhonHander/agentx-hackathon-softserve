@@ -1,9 +1,15 @@
 import { getDelegate } from '../../../../lib/middleware/delegate.js';
 import { buildUrl } from '../../../../lib/router/buildUrl.js';
 import { OK } from '../../../../lib/util/httpStatus.js';
+import { EvershopRequest } from '../../../../types/request.js';
+import { EvershopResponse } from '../../../../types/response.js';
 
-export default async (request, response, next) => {
-  const page = await getDelegate('createPage', request);
+export default async (
+  request: EvershopRequest,
+  response: EvershopResponse,
+  next
+) => {
+  const page = await getDelegate<Record<string, any>>('createPage', request);
   response.status(OK);
   response.json({
     data: {
@@ -17,13 +23,13 @@ export default async (request, response, next) => {
         },
         {
           rel: 'edit',
-          href: buildUrl('cmsPageEdit', { id: page.uuid }),
+          href: buildUrl('cmsPageEdit', { id: page?.uuid }),
           action: 'GET',
           types: ['text/xml']
         },
         {
           rel: 'view',
-          href: buildUrl('cmsPageView', { url_key: page.url_key }),
+          href: buildUrl('cmsPageView', { url_key: page?.url_key }),
           action: 'GET',
           types: ['text/xml']
         }

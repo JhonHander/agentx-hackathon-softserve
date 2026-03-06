@@ -56,26 +56,6 @@ export default {
           return { text: [], className };
         }
         const json = JSON.parse(text);
-        // Loop through each row and find the columns with raw block type. Use dompurify to sanitize the HTML content.
-        json.forEach((row) => {
-          row.columns.forEach((column) => {
-            column.data.blocks.forEach((block) => {
-              if (block.type === 'raw' && block.data.html) {
-                const replacements = {
-                  '&lt;': '<',
-                  '&gt;': '>'
-                };
-                const jsonText = block.data.html
-                  ? block.data.html.replace(
-                      /&lt;|&gt;/g,
-                      (match) => replacements[match]
-                    )
-                  : '';
-                block.data.html = sanitizeHtml(jsonText);
-              }
-            });
-          });
-        });
         return {
           text: json,
           className

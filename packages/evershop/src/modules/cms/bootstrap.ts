@@ -1,4 +1,5 @@
 import path from 'path';
+import { JSONSchemaType } from 'ajv';
 import config from 'config';
 import { CONSTANTS } from '../../lib/helpers.js';
 import { defaultPaginationFilters } from '../../lib/util/defaultPaginationFilters.js';
@@ -7,6 +8,7 @@ import { addProcessor } from '../../lib/util/registry.js';
 import { registerWidget } from '../../lib/widget/widgetManager.js';
 import { registerDefaultPageCollectionFilters } from '../../modules/cms/services/registerDefaultPageCollectionFilters.js';
 import { registerDefaultWidgetCollectionFilters } from '../../modules/cms/services/registerDefaultWidgetCollectionFilters.js';
+import { Route } from '../../types/route.js';
 
 export default () => {
   addProcessor('configurationSchema', (schema) => {
@@ -184,6 +186,7 @@ export default () => {
     ),
     name: 'Menu',
     description: 'Navigation links',
+    defaultSettings: {},
     enabled: true
   });
 
@@ -194,6 +197,7 @@ export default () => {
       'cms/components/BannerSetting.js'
     ),
     component: path.resolve(CONSTANTS.MODULESPATH, 'cms/components/Banner.js'),
+    defaultSettings: {},
     name: 'Banner',
     description: 'Image with call-to-action',
     enabled: true
@@ -209,6 +213,7 @@ export default () => {
       CONSTANTS.MODULESPATH,
       'cms/components/Slideshow.js'
     ),
+    defaultSettings: {},
     name: 'Simple Slideshow',
     description: 'Rotating image carousel',
     enabled: true
@@ -220,21 +225,37 @@ export default () => {
     registerDefaultPageCollectionFilters,
     1
   );
-  addProcessor(
+  addProcessor<Array<any>>(
     'cmsPageCollectionFilters',
     (filters) => [...filters, ...defaultPaginationFilters],
     2
   );
 
   // Reigtering the default filters for widget collection
-  addProcessor(
+  addProcessor<Array<any>>(
     'widgetCollectionFilters',
     registerDefaultWidgetCollectionFilters,
     1
   );
-  addProcessor(
+  addProcessor<Array<any>>(
     'widgetCollectionFilters',
     (filters) => [...filters, ...defaultPaginationFilters],
     2
   );
+
+  addProcessor('payloadSchema', function (schema: JSONSchemaType<any>) {
+    const ctx = this as { route: Route };
+    const route = ctx.route;
+    if (route.id === 'createWidget' || route.id === 'updateWidget') {
+      schema.properties.settings = {
+        properties: {
+          text: {
+            type: 'string',
+            skipEscape: true
+          }
+        }
+      };
+    }
+    return schema;
+  });
 };

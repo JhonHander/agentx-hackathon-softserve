@@ -13,6 +13,7 @@ import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import categoryDataSchema from './categoryDataSchema.json' with { type: 'json' };
 
@@ -78,6 +79,10 @@ async function createCategory(data: CategoryData, context: Record<string, any>) 
     // Validate category data
     validateCategoryDataBeforeInsert(categoryData);
 
+    // Sanitize raw HTML blocks in EditorJS content
+    if (categoryData.description) {
+      sanitizeRawHtml(categoryData.description);
+    }
     // Insert category data
     const category = await hookable(insertCategoryData, context)(
       categoryData,

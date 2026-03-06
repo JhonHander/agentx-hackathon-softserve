@@ -11,6 +11,7 @@
     },
     "description": {
       "type": "array",
+      "skipEscape": true,
       "items": {
         "type": "object",
         "properties": {
