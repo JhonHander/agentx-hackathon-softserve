@@ -1,4 +1,6 @@
 import Spinner from '@components/admin/Spinner.js';
+import { Button } from '@components/common/ui/Button.js';
+import { Checkbox } from '@components/common/ui/Checkbox.js';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -33,8 +35,9 @@ interface Attribute {
 export const CreateVariantGroup: React.FC<{
   currentProductUuid: string;
   createVariantGroupApi: string;
+  onCancel: () => void;
   setGroup: (group: VariantGroup) => void;
-}> = ({ currentProductUuid, createVariantGroupApi, setGroup }) => {
+}> = ({ currentProductUuid, createVariantGroupApi, onCancel, setGroup }) => {
   const [attributes, setAttributes] = React.useState<string[]>([]);
   const { getValues } = useFormContext();
   const groupId = getValues('group_id');
@@ -123,16 +126,15 @@ export const CreateVariantGroup: React.FC<{
     <div>
       <div>
         {(data?.attributes?.items || []).length > 0 && (
-          <div>
+          <div className="space-y-2">
             <div>
               <span>Select the list of attribute</span>
             </div>
             {(data?.attributes?.items || []).map((a) => (
               <label key={a.attributeCode} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  onChange={(e) => {
-                    if (e.target.checked) {
+                <Checkbox
+                  onCheckedChange={(checked) => {
+                    if (checked) {
                       setAttributes(attributes.concat(a.attributeCode));
                     } else {
                       setAttributes(
@@ -144,14 +146,23 @@ export const CreateVariantGroup: React.FC<{
                 <span>{a.attributeName}</span>
               </label>
             ))}
-            <div className="mt-5">
-              <a
-                className="text-interactive hover:underline"
-                href="#"
+            <div className="mt-5 space-x-2">
+              <Button
+                variant={'default'}
+                className={'hover:cursor-pointer'}
                 onClick={(e) => onCreate(e)}
               >
                 Create
-              </a>
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onCancel();
+                }}
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         )}

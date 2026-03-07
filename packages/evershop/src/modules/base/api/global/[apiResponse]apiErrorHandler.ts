@@ -1,7 +1,7 @@
-import { EvershopRequest } from '../../../../types/request.js';
 import { error } from '../../../../lib/log/logger.js';
 import { INTERNAL_SERVER_ERROR } from '../../../../lib/util/httpStatus.js';
 import isDevelopmentMode from '../../../../lib/util/isDevelopmentMode.js';
+import { EvershopRequest } from '../../../../types/request.js';
 import { EvershopResponse } from '../../../../types/response.js';
 
 export default async (

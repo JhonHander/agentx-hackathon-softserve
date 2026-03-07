@@ -36,8 +36,10 @@ export const VariantModal: React.FC<
     createProductApi: string;
   }> & {
     variantGroup: VariantGroup;
+    refresh: () => void;
+    closeDialog: () => void;
   }
-> = ({ variant, variantGroup, createProductApi }) => {
+> = ({ variant, variantGroup, createProductApi, refresh, closeDialog }) => {
   const [saving, setSaving] = useState(false);
   const { watch, register, control } = useFormContext();
   const { fields, append, remove, replace } = useFieldArray({
@@ -113,11 +115,17 @@ export const VariantModal: React.FC<
         toast.error(addVariantResponse.error.message);
       } else {
         toast.success('Variant created successfully');
+        // Close the dialog
+        closeDialog();
+        // Refresh the page to reflect the changes
+        refresh();
       }
     } else {
       toast.success('Variant updated successfully');
+      // Close the dialog
+      closeDialog();
       // Refresh the page to reflect the changes
-      window.location.reload();
+      refresh();
     }
     setSaving(false);
   };

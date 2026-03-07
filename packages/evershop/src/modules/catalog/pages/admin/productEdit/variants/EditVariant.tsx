@@ -17,10 +17,12 @@ export const EditVariant: React.FC<{
   variant: VariantItem;
   refresh: () => void;
   variantGroup: VariantGroup;
-}> = ({ variant, variantGroup }) => {
+}> = ({ variant, variantGroup, refresh }) => {
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
   return (
     <div>
-      <Dialog>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger>
           <Button variant={'link'} className={'hover:cursor-pointer'}>
             <Cog className="w-5 h-5 text-primary" />
@@ -33,7 +35,12 @@ export const EditVariant: React.FC<{
               Update the variant details and attributes here.
             </DialogDescription>
           </DialogHeader>
-          <VariantModal variant={variant} variantGroup={variantGroup} />
+          <VariantModal
+            variant={variant}
+            variantGroup={variantGroup}
+            refresh={refresh}
+            closeDialog={() => setDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

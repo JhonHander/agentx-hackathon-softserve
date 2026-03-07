@@ -15,10 +15,12 @@ export const CreateVariant: React.FC<{
   variantGroup: VariantGroup;
   createProductApi: string;
   refresh: () => void;
-}> = ({ variantGroup, createProductApi }) => {
+}> = ({ variantGroup, createProductApi, refresh }) => {
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
   return (
     <div className="mt-3">
-      <Dialog>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger>
           <Button variant={'outline'}>Add Variant</Button>
         </DialogTrigger>
@@ -30,6 +32,8 @@ export const CreateVariant: React.FC<{
             </DialogDescription>
           </DialogHeader>
           <VariantModal
+            refresh={refresh}
+            closeDialog={() => setDialogOpen(false)}
             variantGroup={variantGroup}
             createProductApi={createProductApi}
           />

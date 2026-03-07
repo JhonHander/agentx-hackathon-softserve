@@ -1,5 +1,5 @@
-import { EvershopRequest } from '../../../../types/request.js';
 import isErrorHandlerTriggered from '../../../../lib/middleware/isErrorHandlerTriggered.js';
+import { EvershopRequest } from '../../../../types/request.js';
 import { EvershopResponse } from '../../../../types/response.js';
 
 export default async (

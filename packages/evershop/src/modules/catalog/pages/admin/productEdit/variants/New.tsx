@@ -1,3 +1,4 @@
+import { Button } from '@components/common/ui/Button.js';
 import { Card, CardContent } from '@components/common/ui/Card.js';
 import React from 'react';
 import { CreateVariantGroup } from './CreateVariantGroup.js';
@@ -13,21 +14,18 @@ export const New: React.FC<{
       <CardContent>
         {action === undefined && (
           <div>
-            <div className="justify-center text-center">
-              <div className="mb-10">
-                <span className="pr-2">
-                  This product has some variants like color or size?
-                </span>
-                <a
-                  className="text-interactive hover:underline"
-                  href="#"
+            <div className="justify-left text-left">
+              <div className="space-y-2">
+                <div>This product has some variants like color or size?</div>
+                <Button
+                  variant={'secondary'}
                   onClick={(e) => {
                     e.preventDefault();
                     setAction('create');
                   }}
                 >
                   Create a variant group
-                </a>
+                </Button>
               </div>
             </div>
           </div>
@@ -37,25 +35,12 @@ export const New: React.FC<{
             <CreateVariantGroup
               currentProductUuid={currentProductUuid}
               setGroup={setGroup}
+              onCancel={() => setAction(undefined)}
               createVariantGroupApi={createVariantGroupApi}
             />
           </div>
         )}
       </CardContent>
-      {action === 'create' && (
-        <CardContent>
-          <a
-            className="text-destructive hover:underline"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setAction(undefined);
-            }}
-          >
-            Cancel
-          </a>
-        </CardContent>
-      )}
     </>
   );
 };
