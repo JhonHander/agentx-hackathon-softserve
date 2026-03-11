@@ -1,3 +1,4 @@
+import Area from '@components/common/Area.js';
 import { EmailField } from '@components/common/form/EmailField.js';
 import { PasswordField } from '@components/common/form/PasswordField.js';
 import { Button } from '@components/common/ui/Button.js';
@@ -212,28 +213,32 @@ export function ContactInformation() {
   const { data: cart } = useCartState();
 
   return (
-    <div className="checkout-contact checkout-step">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <div className="flex items-center gap-2">
-              <CircleUser className="w-5 h-5" />
-              <span>{_('Contact Information')}</span>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {customer ? (
-            <LoggedIn
-              fullName={customer.fullName}
-              email={customer.email}
-              uuid={customer.uuid}
-            />
-          ) : (
-            <Guest email={cart.customerEmail || ''} />
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <Area id="checkoutContactInformationBefore" />
+      <div className="checkout-contact checkout-step">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div className="flex items-center gap-2">
+                <CircleUser className="w-5 h-5" />
+                <span>{_('Contact Information')}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {customer ? (
+              <LoggedIn
+                fullName={customer.fullName}
+                email={customer.email}
+                uuid={customer.uuid}
+              />
+            ) : (
+              <Guest email={cart.customerEmail || ''} />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <Area id="checkoutContactInformationAfter" />
+    </>
   );
 }

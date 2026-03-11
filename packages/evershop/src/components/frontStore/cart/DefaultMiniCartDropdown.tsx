@@ -1,5 +1,4 @@
 import { Area } from '@components/common/Area.js';
-import { Button } from '@components/common/ui/Button.js';
 import {
   Sheet,
   SheetContent,
@@ -10,6 +9,7 @@ import { CartData } from '@components/frontStore/cart/CartContext.js';
 import { CartItems } from '@components/frontStore/cart/CartItems.js';
 import { CartTotalSummary } from '@components/frontStore/cart/CartTotalSummary.js';
 import { DefaultMiniCartDropdownEmpty } from '@components/frontStore/cart/DefaultMiniCartDropdownEmpty.js';
+import { DefaultMiniCartDropdownSummary } from '@components/frontStore/cart/DefaultMinicartDropdownSummary.js';
 import { DefaultMiniCartItemList } from '@components/frontStore/cart/DefaultMiniCartItemList.js';
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import React from 'react';
@@ -63,42 +63,12 @@ export const DefaultMiniCartDropdown: React.FC<{
             <Area id="miniCartSummaryBefore" noOuter />
             <CartTotalSummary>
               {({ total }) => (
-                <>
-                  <div className="minicart__summary flex justify-between items-center mb-3">
-                    <span className="font-medium text-gray-900">
-                      {_('Subtotal')}:
-                    </span>
-                    <span className="font-semibold text-lg text-gray-900">
-                      {total || '—'}
-                    </span>
-                  </div>
-                  <Button
-                    variant={'outline'}
-                    size={'lg'}
-                    onClick={() => {
-                      if (cartUrl) {
-                        window.location.href = cartUrl;
-                      }
-                    }}
-                    className="minicart__viewcart__button w-full "
-                  >
-                    {_('View Cart (${totalQty})', {
-                      totalQty: totalQty.toString()
-                    })}
-                  </Button>
-                  <Button
-                    variant={'default'}
-                    size={'lg'}
-                    onClick={() => {
-                      if (checkoutUrl) {
-                        window.location.href = checkoutUrl;
-                      }
-                    }}
-                    className="minicart__viewcart__button w-full "
-                  >
-                    {_('Checkout')}
-                  </Button>
-                </>
+                <DefaultMiniCartDropdownSummary
+                  total={total}
+                  cartUrl={cartUrl || '/cart'}
+                  checkoutUrl={checkoutUrl || '/checkout'}
+                  totalQty={totalQty}
+                />
               )}
             </CartTotalSummary>
             <Area id="miniCartSummaryAfter" noOuter />

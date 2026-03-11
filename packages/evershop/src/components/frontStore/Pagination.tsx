@@ -7,7 +7,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious
-} from '@evershop/evershop/components/common/ui/Pagination';
+} from '@components/common/ui/Pagination.js';
 import React, { useState, useEffect, useCallback } from 'react';
 
 export interface PaginationProps {

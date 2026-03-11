@@ -54,7 +54,7 @@ export const DefaultProductFilterRender: React.FC<{
         component: { default: PriceFilterRenderer },
         props: { priceRange, currentFilters, setting },
         sortOrder: 10,
-        id: 'price-filter'
+        id: 'priceFilter'
       });
     }
 
@@ -63,7 +63,7 @@ export const DefaultProductFilterRender: React.FC<{
         component: { default: DefaultCategoryFilterRender },
         props: { categories, currentFilters },
         sortOrder: 15,
-        id: 'category-filter'
+        id: 'categoryFilter'
       });
     }
 
@@ -72,7 +72,7 @@ export const DefaultProductFilterRender: React.FC<{
         component: { default: DefaultAttributeFilterRender },
         props: { availableAttributes, currentFilters },
         sortOrder: 20,
-        id: 'attribute-filter'
+        id: 'attributeFilter'
       });
     }
 

@@ -1,3 +1,4 @@
+import Area from '@components/common/Area.js';
 import {
   Card,
   CardContent,
@@ -58,33 +59,41 @@ export function Payment() {
   }, [paymentMethod]);
 
   return (
-    <div className="checkout__payment space-y-6 mt-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              <span>{_('Payment Information')}</span>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BillingAddress
-            billingAddress={billingAddress}
-            addBillingAddress={addBillingAddress}
-            addingBillingAddress={addingBillingAddress}
-            noShippingRequired={noShippingRequired}
-          />
-          {(billingAddress || noShippingRequired === false) && (
-            <PaymentMethods
-              methods={availablePaymentMethods?.map((method) => ({
-                ...method
-              }))}
-              isLoading={addingBillingAddress}
+    <>
+      <Area id="checkoutPaymentBefore" />
+      <div className="checkout__payment space-y-6 mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                <span>{_('Payment Information')}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BillingAddress
+              billingAddress={billingAddress}
+              addBillingAddress={addBillingAddress}
+              addingBillingAddress={addingBillingAddress}
+              noShippingRequired={noShippingRequired}
             />
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            {(billingAddress || noShippingRequired === false) && (
+              <>
+                <Area id="checkoutPaymentMethodsBefore" />
+                <PaymentMethods
+                  methods={availablePaymentMethods?.map((method) => ({
+                    ...method
+                  }))}
+                  isLoading={addingBillingAddress}
+                />
+                <Area id="checkoutPaymentMethodsAfter" />
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <Area id="checkoutPaymentAfter" />
+    </>
   );
 }

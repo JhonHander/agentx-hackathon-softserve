@@ -99,7 +99,6 @@ export default function AreaLoader(c) {
         imports
       );
       const route = routes.find((r) => r.id === routeId);
-      //console.log('building widgets for route', routeId, route);
       const widgetComponents = buildWidgetComponentsPerRoute(
         route,
         widgets,

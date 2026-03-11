@@ -43,13 +43,14 @@ export default function CheckoutPage({
     >
       <div className="page-width grid grid-cols-1 md:grid-cols-2 gap-7 pt-8 pb-8">
         <Form form={form} submitBtn={false}>
+          <Area id="checkoutFormBefore" noOuter />
           <div>
             <ContactInformation />
             <Shipment />
             <Payment />
             <CheckoutButton />
           </div>
-          <Area id="checkoutForm" noOuter />
+          <Area id="checkoutFormAfter" noOuter />
         </Form>
         <div>
           <CartItems>

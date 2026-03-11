@@ -160,6 +160,7 @@ export function ExtendableTable<T = any>({
       onSort={onSort}
       currentSort={currentSort}
     >
+      <Area id={name} />
       <TableContent
         loading={loading}
         noHeader={noHeader}
@@ -202,7 +203,6 @@ function TableContent<T = any>({
 
   return (
     <>
-      <Area id={'shoppingCartItems'} />
       <Table className={className}>
         {!noHeader && (
           <TableHeader>

@@ -39,14 +39,10 @@ export default function CategoryView({ category }: CategoryViewProps) {
             {
               component: {
                 default: (
-                  <div className="flex justify-between items-center border-b border-border pb-2 mb-8">
-                    <div>
-                      {_('${count} Products', {
-                        count: category.products.total.toString()
-                      })}
-                    </div>
-                    <ProductSorting className="flex justify-start" />
-                  </div>
+                  <ProductSorting
+                    className="flex justify-start"
+                    count={category.products.total}
+                  />
                 )
               },
               sortOrder: 10,

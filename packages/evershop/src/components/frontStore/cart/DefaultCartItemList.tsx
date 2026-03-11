@@ -6,9 +6,9 @@ import {
 import { Image } from '@components/common/Image.js';
 import { ProductNoThumbnail } from '@components/common/ProductNoThumbnail.js';
 import { CartItem } from '@components/frontStore/cart/CartContext.js';
+import { ItemQuantity } from '@components/frontStore/cart/ItemQuantity.js';
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import React from 'react';
-import { ItemQuantity } from './ItemQuantity.js';
 
 interface CartItemsTableProps {
   items: CartItem[];
@@ -53,7 +53,7 @@ export const DefaultCartItemList: React.FC<CartItemsTableProps> = ({
               )}
             </div>
             <div className="font-medium flex flex-col gap-1 items-start h-full min-w-0 flex-1">
-              <div className="font-semibold break-words w-full">
+              <div className="font-semibold wrap-break-word w-full">
                 {row.productName}
               </div>
               {row.variantOptions?.map((option) => (
@@ -109,7 +109,7 @@ export const DefaultCartItemList: React.FC<CartItemsTableProps> = ({
                   >
                     −
                   </button>
-                  <span className="min-w-[3rem] text-center">{quantity}</span>
+                  <span className="min-w-12 text-center">{quantity}</span>
                   <button
                     onClick={increase}
                     disabled={loading}
@@ -149,7 +149,7 @@ export const DefaultCartItemList: React.FC<CartItemsTableProps> = ({
 
   return (
     <>
-      <Area id="miniCartItemListBefore" noOuter />
+      <Area id="cartItemListBefore" noOuter />
       <ExtendableTable
         name="shoppingCartItems"
         columns={columns}
@@ -160,7 +160,7 @@ export const DefaultCartItemList: React.FC<CartItemsTableProps> = ({
         currentSort={currentSort}
         className="cart__items__table border-none table-fixed border-spacing-y-2 border-separate w-full"
       />
-      <Area id="miniCartItemListAfter" noOuter />
+      <Area id="cartItemListAfter" noOuter />
       <style>
         {`
         .cart__items__table th, .cart__items__table td {

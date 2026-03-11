@@ -17,7 +17,7 @@ export const DefaultCategoryFilterRender: React.FC<{
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
-    let newFilters = [...currentFilters];
+    let newFilters = currentFilters.map((f) => ({ ...f }));
     const existingFilter = newFilters.find((f) => f.key === 'cat');
 
     if (checked) {

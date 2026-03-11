@@ -8,7 +8,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue
-} from '@evershop/evershop/components/common/ui/Select';
+} from '@components/common/ui/Select.js';
 import { _ } from '@evershop/evershop/lib/locale/translate/_';
 import { cn } from '@evershop/evershop/lib/util/cn';
 import { ArrowDownWideNarrow, ArrowUpWideNarrow } from 'lucide-react';
@@ -46,6 +46,7 @@ interface ProductSortingProps {
   }) => ReactNode;
   className?: string;
   disabled?: boolean;
+  count: number;
 }
 
 const defaultSortOptions: SortOption[] = [
@@ -64,7 +65,8 @@ export function ProductSorting({
   renderSortSelect,
   renderSortDirection,
   className = '',
-  disabled = false
+  disabled = false,
+  count
 }: ProductSortingProps) {
   const AppContextDispatch = useAppDispatch();
 
@@ -228,8 +230,15 @@ export function ProductSorting({
   );
 
   return (
-    <div className={cn(`product-sorting flex gap-2 items-center`, className)}>
-      {containerContent}
+    <div className="flex justify-between items-center border-b border-border pb-2 mb-8">
+      <div>
+        {_('${count} Products', {
+          count: count.toString()
+        })}
+      </div>
+      <div className={cn(`product-sorting flex gap-2 items-center`, className)}>
+        {containerContent}
+      </div>
     </div>
   );
 }

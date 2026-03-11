@@ -6,7 +6,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger
-} from '@evershop/evershop/components/common/ui/NavigationMenu';
+} from '@components/common/ui/NavigationMenu.js';
 import { cn } from '@evershop/evershop/lib/util/cn';
 import React from 'react';
 

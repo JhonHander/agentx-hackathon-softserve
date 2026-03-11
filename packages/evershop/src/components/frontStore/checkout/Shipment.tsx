@@ -1,3 +1,4 @@
+import Area from '@components/common/Area.js';
 import {
   Card,
   CardContent,
@@ -146,33 +147,39 @@ export function Shipment() {
   };
 
   return (
-    <div className="checkout__shipment space-y-6 mt-6">
-      <Card className="transition-all overflow-hidden duration-200">
-        <CardHeader>
-          <CardTitle>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              <span>{_('Shipping Address')}</span>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CustomerAddressForm
-            areaId="checkoutShippingAddressForm"
-            fieldNamePrefix="shippingAddress"
-            address={shippingAddress}
-          />
-        </CardContent>
-      </Card>
-      <ShippingMethods
-        methods={availableShippingMethods?.map((method) => ({
-          ...method,
-          isSelected: method.code === selectedShippingMethod
-        }))}
-        shippingAddress={shippingAddress}
-        onSelect={updateShipment}
-        isLoading={fetchingShippingMethods}
-      />
-    </div>
+    <>
+      <Area id="checkoutShipmentBefore" />
+      <div className="checkout__shipment space-y-6 mt-6">
+        <Card className="transition-all overflow-hidden duration-200">
+          <CardHeader>
+            <CardTitle>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{_('Shipping Address')}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomerAddressForm
+              areaId="checkoutShippingAddressForm"
+              fieldNamePrefix="shippingAddress"
+              address={shippingAddress}
+            />
+          </CardContent>
+        </Card>
+        <Area id="checkoutShippingMethodsBefore" noOuter />
+        <ShippingMethods
+          methods={availableShippingMethods?.map((method) => ({
+            ...method,
+            isSelected: method.code === selectedShippingMethod
+          }))}
+          shippingAddress={shippingAddress}
+          onSelect={updateShipment}
+          isLoading={fetchingShippingMethods}
+        />
+        <Area id="checkoutShippingMethodsAfter" noOuter />
+      </div>
+      <Area id="checkoutShipmentAfter" />
+    </>
   );
 }

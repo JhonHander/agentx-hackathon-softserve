@@ -30,7 +30,6 @@ export default function ShoppingCart({ checkoutUrl }: ShoppingCartProps) {
           <Title title={_('Shopping Cart')} />
           <div className="grid gap-10 grid-cols-1 md:grid-cols-4">
             <div className="col-span-1 md:col-span-3">
-              <Area id="shoppingCartBeforeItems" noOuter />
               <CartItems>
                 {({ items, showPriceIncludingTax, loading, onRemoveItem }) => (
                   <DefaultCartItemList
@@ -41,7 +40,6 @@ export default function ShoppingCart({ checkoutUrl }: ShoppingCartProps) {
                   />
                 )}
               </CartItems>
-              <Area id="shoppingCartAfterItems" noOuter />
             </div>
             <div className="col-span-1 md:col-span-1">
               <Area id="shoppingCartBeforeSummary" noOuter />
