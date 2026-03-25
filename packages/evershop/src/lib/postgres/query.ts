@@ -10,7 +10,6 @@ import type {
   PoolClient,
   Pool
 } from '@evershop/postgres-query-builder';
-
 import type {
   AdminUserRow,
   AttributeRow,
