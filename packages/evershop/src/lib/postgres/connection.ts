@@ -55,15 +55,19 @@ switch (sslMode) {
   }
 }
 
-const pool = new Pool(connectionSetting);
-// Set the timezone
-pool.on('connect', (client) => {
-  const timeZone = getConfig('shop.timezone', 'UTC');
-  client.query(`SET TIMEZONE TO "${timeZone}";`);
-});
+// onConnect is awaited by pg before the client is handed to user code,
+// unlike pool.on('connect', ...) which is not awaited (deprecated in pg@8.19.0).
+// Cast needed because @types/pg doesn't yet declare onConnect in PoolConfig.
+const pool = new Pool({
+  ...connectionSetting,
+  onConnect: async (client: import('pg').PoolClient) => {
+    const timeZone = getConfig('shop.timezone', 'UTC');
+    await client.query(`SET TIMEZONE TO "${timeZone}";`);
+  }
+} as PoolConfig);
 
 async function getConnection(): Promise<PoolClient> {
   return await pool.connect();
 }
 
-export { pool, getConnection };
+export { pool, getConnection, connectionSetting };

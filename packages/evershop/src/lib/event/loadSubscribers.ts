@@ -3,8 +3,20 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { error } from '../../lib/log/logger.js';
 
-async function loadModuleSubscribers(modulePath) {
-  const subscribers = [];
+type Subscriber = {
+  event: string;
+  subscriber: (data: unknown) => void | Promise<void>;
+};
+
+type Module = {
+  path: string;
+  [key: string]: unknown;
+};
+
+async function loadModuleSubscribers(
+  modulePath: string
+): Promise<Subscriber[]> {
+  const subscribers: Subscriber[] = [];
   const subscribersDir = path.join(modulePath, 'subscribers');
 
   if (!fs.existsSync(subscribersDir)) {
@@ -29,10 +41,10 @@ async function loadModuleSubscribers(modulePath) {
       await Promise.all(
         files.map(async (file) => {
           const subscriberPath = path.join(eventSubscribersDir, file);
-          const module = await import(pathToFileURL(subscriberPath));
+          const mod = await import(pathToFileURL(subscriberPath).toString());
           subscribers.push({
             event: eventName,
-            subscriber: module.default
+            subscriber: mod.default
           });
         })
       );
@@ -42,13 +54,13 @@ async function loadModuleSubscribers(modulePath) {
   return subscribers;
 }
 
-export async function loadSubscribers(modules) {
-  const subscribers = [];
-  /** Loading subscriber  */
+export async function loadSubscribers(
+  modules: Module[]
+): Promise<Subscriber[]> {
+  const subscribers: Subscriber[] = [];
   await Promise.all(
     modules.map(async (module) => {
       try {
-        // Load subscribers
         subscribers.push(...(await loadModuleSubscribers(module.path)));
       } catch (e) {
         error(e);
