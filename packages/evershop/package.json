@@ -39,6 +39,10 @@
       "import": "./dist/lib/postgres/connection.js",
       "types": "./dist/lib/postgres/connection.d.ts"
     },
+    "./lib/postgres/query": {
+      "import": "./dist/lib/postgres/query.js",
+      "types": "./dist/lib/postgres/query.d.ts"
+    },
     "./lib/locale/*": {
       "import": "./dist/lib/locale/*.js",
       "types": "./dist/lib/locale/*.d.ts"
