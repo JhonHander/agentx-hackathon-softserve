@@ -333,28 +333,29 @@ export default () => {
   hookAfter(
     'changePaymentStatus',
     async (order, orderId, status, connection) => {
-      if (order.status === 'canceled') {
+      const newOrderStatus = resolveOrderStatus(status, order.shipment_status);
+      if (order.status === 'canceled' && newOrderStatus !== 'canceled') {
         throw new Error('Order is already canceled');
       }
-      if (order.status === 'closed') {
+      if (order.status === 'closed' && newOrderStatus !== 'closed') {
         throw new Error('Order is already closed');
       }
-      const orderStatus = resolveOrderStatus(status, order.shipment_status);
-      await changeOrderStatus(orderId, orderStatus, connection);
+      await changeOrderStatus(orderId, newOrderStatus, connection);
     }
   );
 
   hookAfter(
     'changeShipmentStatus',
     async (order, orderId, status, connection) => {
-      if (order.status === 'canceled') {
+      const newOrderStatus = resolveOrderStatus(order.payment_status, status);
+      if (order.status === 'canceled' && newOrderStatus !== 'canceled') {
         throw new Error('Order is already canceled');
       }
-      if (order.status === 'closed') {
+      if (order.status === 'closed' && newOrderStatus !== 'closed') {
         throw new Error('Order is already closed');
       }
-      const orderStatus = resolveOrderStatus(order.payment_status, status);
-      await changeOrderStatus(orderId, orderStatus, connection);
+
+      await changeOrderStatus(orderId, newOrderStatus, connection);
     }
   );
 
