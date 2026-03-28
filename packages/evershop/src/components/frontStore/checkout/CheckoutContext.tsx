@@ -322,13 +322,7 @@ export function CheckoutProvider({
     });
 
     return json.data;
-  }, [
-    cartState.data?.checkoutApi,
-    cartId,
-    form,
-    enableForm,
-    disableForm
-  ]);
+  }, [cartState.data?.checkoutApi, cartId, form, enableForm, disableForm]);
 
   // Checkout data management
   const setCheckoutData = useCallback((data: CheckoutData) => {
