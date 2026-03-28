@@ -143,7 +143,7 @@ export default function CashOnDeliveryMethod({
 }
 
 export const layout = {
-  areaId: 'checkoutForm',
+  areaId: 'checkoutFormAfter',
   sortOrder: 10
 };
 

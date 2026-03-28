@@ -198,7 +198,7 @@ export default function PaypalMethod({
 }
 
 export const layout = {
-  areaId: 'checkoutForm',
+  areaId: 'checkoutFormAfter',
   sortOrder: 10
 };
 
