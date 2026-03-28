@@ -1,7 +1,9 @@
 body .codex-editor {
   z-index: 99;
 }
-
+body .codex-editor:not(.codex-editor--toolbox-opened) {
+  z-index: 1 !important;
+}
 #rows {
   .row {
     background-color: #fff;
