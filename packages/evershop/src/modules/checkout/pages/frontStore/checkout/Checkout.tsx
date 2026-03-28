@@ -50,6 +50,8 @@ export default function CheckoutPage({
             <Payment />
             <CheckoutButton />
           </div>
+          /** For legacy support */
+          <Area id="checkoutForm" noOuter />
           <Area id="checkoutFormAfter" noOuter />
         </Form>
         <div>

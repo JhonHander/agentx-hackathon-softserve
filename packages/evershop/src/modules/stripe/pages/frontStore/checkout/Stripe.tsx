@@ -463,7 +463,7 @@ export default function StripeMethod({
 }
 
 export const layout = {
-  areaId: 'checkoutForm',
+  areaId: 'checkoutFormAfter',
   sortOrder: 10
 };
 
