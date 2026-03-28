@@ -105,7 +105,11 @@ export function ShippingMethods({
   };
 
   return (
-    <div className="checkout-shipment">
+    <div
+      className="checkout-shipment"
+      aria-invalid={formState.errors.shippingMethod ? 'true' : 'false'}
+      tabIndex={-1}
+    >
       <Card>
         <CardHeader>
           <CardTitle>
