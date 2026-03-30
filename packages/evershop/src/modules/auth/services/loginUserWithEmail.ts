@@ -2,6 +2,7 @@ import { select } from '@evershop/postgres-query-builder';
 import { pool } from '../../../lib/postgres/connection.js';
 import { hookable, hookBefore, hookAfter } from '../../../lib/util/hookable.js';
 import { comparePassword } from '../../../lib/util/passwordHelper.js';
+import { buildAdminUserPayload } from './buildAdminUserPayload.js';
 
 /**
  * This function will login the admin user with email and password. This function must be accessed from the request object (request.loginUserWithEmail(email, password, callback))
@@ -28,10 +29,8 @@ const _loginUserWithEmail = async function loginUserWithEmail(
   if (this.session) {
     this.session.userID = user.admin_user_id;
   }
-  // Delete the password field
-  delete user.password;
-  // Save the user in the request
-  this.locals.user = user;
+  // Save the user in the request using a safe payload (no password)
+  this.locals.user = buildAdminUserPayload(user);
 };
 
 export async function loginUserWithEmail(
