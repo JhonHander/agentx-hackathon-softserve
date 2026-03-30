@@ -6,9 +6,14 @@ import {
 } from '@evershop/postgres-query-builder';
 import type { PoolClient } from '@evershop/postgres-query-builder';
 import { getConnection } from '../../../../lib/postgres/connection.js';
-import { hookable, hookBefore, hookAfter } from '../../../../lib/util/hookable.js';
+import {
+  hookable,
+  hookBefore,
+  hookAfter
+} from '../../../../lib/util/hookable.js';
 import { getValue } from '../../../../lib/util/registry.js';
 import { Row, sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
+import type { CollectionRow } from '../../../../types/db/index.js';
 
 export type CollectionData = {
   name: string;
@@ -20,7 +25,7 @@ export type CollectionData = {
 async function insertCollectionData(
   data: CollectionData,
   connection: PoolClient
-) {
+): Promise<CollectionRow & { insertId: number }> {
   const collection = await insert('collection').given(data).execute(connection);
   return collection;
 }
@@ -33,7 +38,7 @@ async function insertCollectionData(
 async function createCollection(
   data: CollectionData,
   context: Record<string, any>
-) {
+): Promise<CollectionRow & { insertId: number }> {
   const connection = await getConnection();
   await startTransaction(connection);
   const hookContext = { connection, ...context };
@@ -67,7 +72,10 @@ async function createCollection(
  * @param {Object} data
  * @param {Object} context
  */
-export default async (data: CollectionData, context: Record<string, any>) => {
+export default async (
+  data: CollectionData,
+  context: Record<string, any>
+): Promise<CollectionRow & { insertId: number }> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
@@ -79,10 +87,7 @@ export default async (data: CollectionData, context: Record<string, any>) => {
 export function hookBeforeInsertCollectionData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    data: CollectionData,
-    connection: PoolClient
-    ]
+    ...args: [data: CollectionData, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -92,10 +97,7 @@ export function hookBeforeInsertCollectionData(
 export function hookAfterInsertCollectionData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    data: CollectionData,
-    connection: PoolClient
-    ]
+    ...args: [data: CollectionData, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -105,10 +107,7 @@ export function hookAfterInsertCollectionData(
 export function hookBeforeCreateCollection(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    data: CollectionData,
-    context: Record<string, any>
-    ]
+    ...args: [data: CollectionData, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -118,10 +117,7 @@ export function hookBeforeCreateCollection(
 export function hookAfterCreateCollection(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    data: CollectionData,
-    context: Record<string, any>
-    ]
+    ...args: [data: CollectionData, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {

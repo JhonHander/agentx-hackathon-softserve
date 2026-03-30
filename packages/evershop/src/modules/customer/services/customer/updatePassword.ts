@@ -7,17 +7,22 @@ import {
   update
 } from '@evershop/postgres-query-builder';
 import { getConnection } from '../../../../lib/postgres/connection.js';
-import { hookable, hookBefore, hookAfter } from '../../../../lib/util/hookable.js';
+import {
+  hookable,
+  hookBefore,
+  hookAfter
+} from '../../../../lib/util/hookable.js';
 import {
   hashPassword,
   verifyPassword
 } from '../../../../lib/util/passwordHelper.js';
+import type { CustomerRow } from '../../../../types/db/index.js';
 
 async function updateCustomerPassword(
   customerId: number,
   hash: string,
   connection: PoolClient
-) {
+): Promise<void> {
   await update('customer')
     .given({
       password: hash
@@ -36,7 +41,7 @@ async function updatePassword(
   customerId: number,
   newPassword: string,
   context: Record<string, unknown>
-): Promise<Record<string, unknown>> {
+): Promise<CustomerRow> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -87,11 +92,7 @@ export default async (
 export function hookBeforeUpdateCustomerPassword(
   callback: (
     this: Record<string, unknown>,
-    ...args: [
-    customerId: number,
-    hash: string,
-    connection: PoolClient
-    ]
+    ...args: [customerId: number, hash: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -101,11 +102,7 @@ export function hookBeforeUpdateCustomerPassword(
 export function hookAfterUpdateCustomerPassword(
   callback: (
     this: Record<string, unknown>,
-    ...args: [
-    customerId: number,
-    hash: string,
-    connection: PoolClient
-    ]
+    ...args: [customerId: number, hash: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -116,9 +113,9 @@ export function hookBeforeUpdatePassword(
   callback: (
     this: Record<string, unknown>,
     ...args: [
-    customerId: number,
-    newPassword: string,
-    context: Record<string, unknown>
+      customerId: number,
+      newPassword: string,
+      context: Record<string, unknown>
     ]
   ) => void | Promise<void>,
   priority: number = 10
@@ -130,9 +127,9 @@ export function hookAfterUpdatePassword(
   callback: (
     this: Record<string, unknown>,
     ...args: [
-    customerId: number,
-    newPassword: string,
-    context: Record<string, unknown>
+      customerId: number,
+      newPassword: string,
+      context: Record<string, unknown>
     ]
   ) => void | Promise<void>,
   priority: number = 10

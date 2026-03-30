@@ -18,6 +18,7 @@ import {
   getValueSync
 } from '../../../../lib/util/registry.js';
 import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
+import type { ProductDescriptionRow, ProductRow } from '../../../../types/db/index.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import productDataSchema from './productDataSchema.json'  with { type: 'json' };
 
@@ -48,7 +49,7 @@ export type ProductAttributeData = {
   [key: string]: unknown
 }
 
-function validateProductDataBeforeInsert(data: ProductData) {
+function validateProductDataBeforeInsert(data: ProductData): ProductData {
   const ajv = getAjv();
   (productDataSchema as JSONSchemaType<any>).required = [
     'name',
@@ -74,7 +75,7 @@ function validateProductDataBeforeInsert(data: ProductData) {
   }
 }
 
-async function insertProductInventory(inventoryData: ProductInventoryData, productId: number, connection: PoolClient) {
+async function insertProductInventory(inventoryData: ProductInventoryData, productId: number, connection: PoolClient): Promise<void> {
   // Save the product inventory
   await insert('product_inventory')
     .given(inventoryData)
@@ -82,7 +83,7 @@ async function insertProductInventory(inventoryData: ProductInventoryData, produ
     .execute(connection);
 }
 
-async function insertProductAttributes(attributes: ProductAttributeData[], productId: number, connection: PoolClient) {
+async function insertProductAttributes(attributes: ProductAttributeData[], productId: number, connection: PoolClient): Promise<void> {
   // Looping attributes array
   for (let i = 0; i < attributes.length; i += 1) {
     const attribute = attributes[i];
@@ -186,7 +187,7 @@ async function insertProductAttributes(attributes: ProductAttributeData[], produ
   }
 }
 
-async function insertProductImages(images: string[], productId: number, connection: PoolClient) {
+async function insertProductImages(images: string[], productId: number, connection: PoolClient): Promise<void> {
   const baseUrl = getBaseUrl()
   await Promise.all(
     images.map((f, index) =>
@@ -207,7 +208,7 @@ async function insertProductImages(images: string[], productId: number, connecti
 }
 
 
-async function insertProductData(data: ProductData, connection: PoolClient) {
+async function insertProductData(data: ProductData, connection: PoolClient): Promise<ProductRow & ProductDescriptionRow & { insertId: number }> {
   // If no_shipping_required is true, set weight to 0
   const productData = { ...data, weight: data.no_shipping_required ? 0 : data.weight };
   const product = await insert('product').given(productData).execute(connection);
@@ -227,7 +228,7 @@ async function insertProductData(data: ProductData, connection: PoolClient) {
  * @param {Object} data
  * @param {Object} context
  */
-async function createProduct(data: ProductData, context: Record<string, any>) {
+async function createProduct(data: ProductData, context: Record<string, any>): Promise<ProductRow & ProductDescriptionRow & { insertId: number }> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -279,7 +280,7 @@ async function createProduct(data: ProductData, context: Record<string, any>) {
  * @param {Object} data
  * @param {Object} context
  */
-export default async (data: ProductData, context: Record<string, any>) => {
+export default async (data: ProductData, context: Record<string, any>): Promise<ProductRow & ProductDescriptionRow & { insertId: number }> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
