@@ -7,10 +7,18 @@ import {
   startTransaction
 } from '@evershop/postgres-query-builder';
 import { getConnection } from '../../../../lib/postgres/connection.js';
-import { hookable, hookBefore, hookAfter } from '../../../../lib/util/hookable.js';
+import {
+  hookable,
+  hookBefore,
+  hookAfter
+} from '../../../../lib/util/hookable.js';
+import type { CustomerRow } from '../../../../types/db/index.js';
 import { CustomerData } from './createCustomer.js';
 
-async function deleteCustomerData(uuid: string, connection: PoolClient) {
+async function deleteCustomerData(
+  uuid: string,
+  connection: PoolClient
+): Promise<void> {
   await del('customer').where('uuid', '=', uuid).execute(connection);
 }
 /**
@@ -18,7 +26,10 @@ async function deleteCustomerData(uuid: string, connection: PoolClient) {
  * @param {String} uuid
  * @param {Object} context
  */
-async function deleteCustomer(uuid: string, context: Record<string, any>) {
+async function deleteCustomer(
+  uuid: string,
+  context: Record<string, any>
+): Promise<Omit<CustomerRow, 'password'>> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -51,7 +62,7 @@ async function deleteCustomer(uuid: string, context: Record<string, any>) {
 export default async (
   uuid: string,
   context: Record<string, any>
-): Promise<CustomerData> => {
+): Promise<Omit<CustomerRow, 'password'>> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
@@ -63,10 +74,7 @@ export default async (
 export function hookBeforeDeleteCustomerData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -76,10 +84,7 @@ export function hookBeforeDeleteCustomerData(
 export function hookAfterDeleteCustomerData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -89,10 +94,7 @@ export function hookAfterDeleteCustomerData(
 export function hookBeforeDeleteCustomer(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -102,10 +104,7 @@ export function hookBeforeDeleteCustomer(
 export function hookAfterDeleteCustomer(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {

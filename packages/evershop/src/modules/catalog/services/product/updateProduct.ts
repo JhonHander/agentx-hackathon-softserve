@@ -19,11 +19,12 @@ import {
   getValueSync
 } from '../../../../lib/util/registry.js';
 import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
+import type { ProductDescriptionRow, ProductRow } from '../../../../types/db/index.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import type { ProductAttributeData, ProductData, ProductInventoryData } from './createProduct.js';
 import productDataSchema from './productDataSchema.json' with { type: 'json' };
 
-function validateProductDataBeforeUpdate(data: ProductData) {
+function validateProductDataBeforeUpdate(data: ProductData): ProductData {
   const ajv = getAjv();
   (productDataSchema as JSONSchemaType<any>).required = [];
   const jsonSchema = getValueSync(
@@ -40,7 +41,7 @@ function validateProductDataBeforeUpdate(data: ProductData) {
   }
 }
 
-async function updateProductInventory(inventoryData: ProductInventoryData, productId: number, connection: PoolClient) {
+async function updateProductInventory(inventoryData: ProductInventoryData, productId: number, connection: PoolClient): Promise<void> {
   // Save the product inventory
   try {
     // Update product inventory
@@ -61,7 +62,7 @@ async function updateProductInventory(inventoryData: ProductInventoryData, produ
  * @param {*} connection
  * @returns
  */
-async function saveProductAttributes(productId: number, attributes: ProductAttributeData[], connection: PoolClient) {
+async function saveProductAttributes(productId: number, attributes: ProductAttributeData[], connection: PoolClient): Promise<void> {
   for (let i = 0; i < attributes.length; i += 1) {
     const attribute = attributes[i];
     if (attribute.value) {
@@ -175,11 +176,11 @@ async function saveProductAttributes(productId: number, attributes: ProductAttri
 }
 
 async function updateProductAttributes(
-  attributes,
-  productId,
-  variantGroupId,
-  connection
-) {
+  attributes: ProductAttributeData[],
+  productId: number,
+  variantGroupId: number | null,
+  connection: PoolClient
+): Promise<void> {
   if (!variantGroupId) {
     await saveProductAttributes(productId, attributes, connection);
   } else {
@@ -229,7 +230,7 @@ async function updateProductAttributes(
   }
 }
 
-async function updateProductImages(images, productId, connection) {
+async function updateProductImages(images: string[] | undefined, productId: number, connection: PoolClient): Promise<void> {
   if (Array.isArray(images) && images.length === 0) {
     // Delete all images
     await del('product_image')
@@ -282,7 +283,7 @@ async function updateProductImages(images, productId, connection) {
   }
 }
 
-async function updateProductData(uuid: string, data: ProductData, connection: PoolClient) {
+async function updateProductData(uuid: string, data: ProductData, connection: PoolClient): Promise<ProductRow & ProductDescriptionRow & { updatedId?: number }> {
   // If no_shipping_required is true, set weight to 0
   const productData = { ...data, weight: data.no_shipping_required ? 0 : data.weight };
   const query = select().from('product');
@@ -309,9 +310,9 @@ async function updateProductData(uuid: string, data: ProductData, connection: Po
       throw e;
     }
   }
-
+  let description;
   try {
-    const description = await update('product_description')
+    description = await update('product_description')
       .given(data)
       .where('product_description_product_id', '=', product.product_id)
       .execute(connection);
@@ -348,8 +349,11 @@ async function updateProductData(uuid: string, data: ProductData, connection: Po
         .execute(connection);
     }
   }
-  Object.assign(product, newProduct);
-  return product;
+  return {
+    ...description,
+    ...newProduct,
+    updatedId: product.product_id
+  }
 }
 
 /**
@@ -358,7 +362,7 @@ async function updateProductData(uuid: string, data: ProductData, connection: Po
  * @param {Object} data
  * @param {Object} context
  */
-async function updateProduct(uuid: string, data: ProductData, context: Record<string, any>) {
+async function updateProduct(uuid: string, data: ProductData, context: Record<string, any>): Promise<ProductRow & ProductDescriptionRow & { updatedId?: number }> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -426,7 +430,7 @@ async function updateProduct(uuid: string, data: ProductData, context: Record<st
  * @param {Object} data
  * @param {Object} context
  */
-export default async (uuid: string, data: ProductData, context: Record<string, any>) => {
+export default async (uuid: string, data: ProductData, context: Record<string, any>): Promise<ProductRow & ProductDescriptionRow & { updatedId?: number }> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');

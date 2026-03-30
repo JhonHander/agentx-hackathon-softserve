@@ -13,6 +13,7 @@ import {
   getValue,
   getValueSync
 } from '../../../../lib/util/registry.js';
+import type { AttributeRow } from '../../../../types/db/index.js';
 import { getAjv } from '../../../base/services/getAjv.js';
 import attributeDataSchema from './attributeDataSchema.json' with { type: 'json' };
 
@@ -27,7 +28,7 @@ export type AttributeData = {
   [key: string]: unknown;
 };
 
-function validateAttributeDataBeforeInsert(data: AttributeData) {
+function validateAttributeDataBeforeInsert(data: AttributeData): AttributeData {
   const ajv = getAjv();
   attributeDataSchema.required = [
     'attribute_code',
@@ -51,7 +52,7 @@ function validateAttributeDataBeforeInsert(data: AttributeData) {
   }
 }
 
-async function insertAttributeGroups(attributeId: number, groups: number[], connection: PoolClient) {
+async function insertAttributeGroups(attributeId: number, groups: number[], connection: PoolClient): Promise<void> {
   // Ignore updating groups if it is not present in the data
   if (groups.length === 0) {
     return;
@@ -76,7 +77,7 @@ async function insertAttributeOptions(
   attributeCode: string,
   options: { option_text: string }[],
   connection: PoolClient
-) {
+): Promise<void> {
   // Ignore updating options if it is not present in the data
   if (
     options.length === 0 ||
@@ -99,7 +100,7 @@ async function insertAttributeOptions(
   );
 }
 
-async function insertAttributeData(data: AttributeData, connection: PoolClient) {
+async function insertAttributeData(data: AttributeData, connection: PoolClient): Promise<AttributeRow & { insertId: number }> {
   const result = await insert('attribute').given(data).execute(connection);
   return result;
 }
@@ -109,7 +110,7 @@ async function insertAttributeData(data: AttributeData, connection: PoolClient) 
  * @param {Object} data
  * @param {Object} context
  */
-async function createAttribute(data: AttributeData, context: Record<string, any>) {
+async function createAttribute(data: AttributeData, context: Record<string, any>): Promise<AttributeRow & { insertId: number }> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -156,7 +157,7 @@ async function createAttribute(data: AttributeData, context: Record<string, any>
  * @param {Object} data
  * @param {Object} context
  */
-export default async (data: AttributeData, context: Record<string, any>) => {
+export default async (data: AttributeData, context: Record<string, any>): Promise<AttributeRow & { insertId: number }> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');

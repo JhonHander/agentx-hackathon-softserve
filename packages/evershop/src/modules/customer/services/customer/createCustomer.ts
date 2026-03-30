@@ -63,7 +63,7 @@ async function insertCustomerData<T extends CustomerData>(data: T, connection: P
  * @param {Object} data
  * @param {Object} context
  */
-async function createCustomer<T extends CustomerData>(data: T, context: Record<string, unknown> = {}) {
+async function createCustomer<T extends CustomerData>(data: T, context: Record<string, unknown> = {}): Promise<CustomerRow> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {

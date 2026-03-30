@@ -7,9 +7,20 @@ import {
 } from '@evershop/postgres-query-builder';
 import type { PoolClient } from '@evershop/postgres-query-builder';
 import { getConnection } from '../../../../lib/postgres/connection.js';
-import { hookable, hookBefore, hookAfter } from '../../../../lib/util/hookable.js';
+import {
+  hookable,
+  hookBefore,
+  hookAfter
+} from '../../../../lib/util/hookable.js';
+import type {
+  CategoryDescriptionRow,
+  CategoryRow
+} from '../../../../types/db/index.js';
 
-async function deleteCategoryData(uuid: string, connection: PoolClient) {
+async function deleteCategoryData(
+  uuid: string,
+  connection: PoolClient
+): Promise<void> {
   await del('category').where('uuid', '=', uuid).execute(connection);
 }
 /**
@@ -17,7 +28,10 @@ async function deleteCategoryData(uuid: string, connection: PoolClient) {
  * @param {String} uuid
  * @param {Object} context
  */
-async function deleteCategory(uuid: string, context: Record<string, any>) {
+async function deleteCategory(
+  uuid: string,
+  context: Record<string, any>
+): Promise<CategoryRow & CategoryDescriptionRow> {
   const connection = await getConnection();
   await startTransaction(connection);
   try {
@@ -53,7 +67,10 @@ async function deleteCategory(uuid: string, context: Record<string, any>) {
  * @param {String} uuid
  * @param {Object} context
  */
-export default async (uuid: string, context: Record<string, any>) => {
+export default async (
+  uuid: string,
+  context: Record<string, any>
+): Promise<CategoryRow & CategoryDescriptionRow> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
@@ -65,10 +82,7 @@ export default async (uuid: string, context: Record<string, any>) => {
 export function hookBeforeDeleteCategoryData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -78,10 +92,7 @@ export function hookBeforeDeleteCategoryData(
 export function hookAfterDeleteCategoryData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -91,10 +102,7 @@ export function hookAfterDeleteCategoryData(
 export function hookBeforeDeleteCategory(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -104,10 +112,7 @@ export function hookBeforeDeleteCategory(
 export function hookAfterDeleteCategory(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {

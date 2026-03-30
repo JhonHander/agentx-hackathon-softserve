@@ -7,16 +7,21 @@ import {
 } from '@evershop/postgres-query-builder';
 import type { PoolClient } from '@evershop/postgres-query-builder';
 import { getConnection } from '../../../../lib/postgres/connection.js';
-import { hookable, hookBefore, hookAfter } from '../../../../lib/util/hookable.js';
+import {
+  hookable,
+  hookBefore,
+  hookAfter
+} from '../../../../lib/util/hookable.js';
 import { getValue } from '../../../../lib/util/registry.js';
 import { sanitizeRawHtml } from '../../../../lib/util/sanitizeHtml.js';
+import type { CollectionRow } from '../../../../types/db/index.js';
 import { CollectionData } from './createCollection.js';
 
 async function updateCollectionData(
   uuid: string,
   data: CollectionData,
   connection: PoolClient
-) {
+): Promise<CollectionRow & { updatedId?: number }> {
   const collection = await select()
     .from('collection')
     .where('uuid', '=', uuid)
@@ -31,15 +36,13 @@ async function updateCollectionData(
       .given(data)
       .where('uuid', '=', uuid)
       .execute(connection);
-
-    return newCollection;
+    Object.assign(collection, newCollection);
   } catch (e) {
     if (!e.message.includes('No data was provided')) {
       throw e;
-    } else {
-      return collection;
     }
   }
+  return collection;
 }
 
 /**
@@ -52,7 +55,7 @@ async function updateCollection(
   uuid: string,
   data: CollectionData,
   context: Record<string, any>
-) {
+): Promise<CollectionRow & { updatedId?: number }> {
   const connection = await getConnection();
   await startTransaction(connection);
   const hookContext = { connection, ...context };
@@ -87,7 +90,7 @@ export default async (
   uuid: string,
   data: CollectionData,
   context: Record<string, any>
-) => {
+): Promise<CollectionRow & { updatedId?: number }> => {
   // Make sure the context is either not provided or is an object
   if (context && typeof context !== 'object') {
     throw new Error('Context must be an object');
@@ -104,11 +107,7 @@ export default async (
 export function hookBeforeUpdateCollectionData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    data: CollectionData,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, data: CollectionData, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -118,11 +117,7 @@ export function hookBeforeUpdateCollectionData(
 export function hookAfterUpdateCollectionData(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    data: CollectionData,
-    connection: PoolClient
-    ]
+    ...args: [uuid: string, data: CollectionData, connection: PoolClient]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -132,11 +127,7 @@ export function hookAfterUpdateCollectionData(
 export function hookBeforeUpdateCollection(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    data: CollectionData,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, data: CollectionData, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
@@ -146,11 +137,7 @@ export function hookBeforeUpdateCollection(
 export function hookAfterUpdateCollection(
   callback: (
     this: Record<string, any>,
-    ...args: [
-    uuid: string,
-    data: CollectionData,
-    context: Record<string, any>
-    ]
+    ...args: [uuid: string, data: CollectionData, context: Record<string, any>]
   ) => void | Promise<void>,
   priority: number = 10
 ): void {
