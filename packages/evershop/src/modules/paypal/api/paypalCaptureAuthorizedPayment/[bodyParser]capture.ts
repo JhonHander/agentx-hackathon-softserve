@@ -66,7 +66,11 @@ export default async (
         `/v2/payments/authorizations/${transaction.transaction_id}`
       );
       if (transactionDetails.data.status === 'CAPTURED') {
-        await updatePaymentStatus(order.order_id, 'paid');
+        await updatePaymentStatus(
+          order.order_id,
+          'paypal_captured',
+          connection
+        );
         // Save order activities
         await addOrderActivityLog(
           order.order_id,
@@ -87,7 +91,11 @@ export default async (
         );
         if (responseData.data.status === 'COMPLETED') {
           // Update payment status
-          await updatePaymentStatus(order.order_id, 'paid', connection);
+          await updatePaymentStatus(
+            order.order_id,
+            'paypal_captured',
+            connection
+          );
           // Save order activities
           await addOrderActivityLog(
             order.order_id,

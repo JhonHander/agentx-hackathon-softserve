@@ -43,7 +43,7 @@ export default function PaypalCaptureButton({
   return (
     <RenderIfTrue
       condition={
-        paymentMethod === 'paypal' && paymentStatus.code === 'authorized'
+        paymentMethod === 'paypal' && paymentStatus.code === 'paypal_authorized'
       }
     >
       <CardContent>

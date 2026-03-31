@@ -18,7 +18,7 @@ export default async () => {
         },
         stripe_captured: {
           name: 'Captured',
-          isDefault: true,
+          isDefault: false,
           isCancelable: false,
           badge: 'success'
         },

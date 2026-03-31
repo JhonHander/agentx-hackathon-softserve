@@ -51,7 +51,11 @@ export default async (
 
       if (responseData.data.status === 'COMPLETED') {
         // Update payment status
-        await updatePaymentStatus(order.order_id, 'paid', connection);
+        await updatePaymentStatus(
+          order.order_id,
+          'paypal_captured',
+          connection
+        );
         // Add transaction data to database
         await insert('payment_transaction')
           .given({

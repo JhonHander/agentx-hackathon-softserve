@@ -1,11 +1,32 @@
+import config from 'config';
 import { getConfig } from '../../lib/util/getConfig.js';
 import { hookAfter } from '../../lib/util/hookable.js';
-import { addProcessor } from '../../lib/util/registry.js';
 import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentMethods.js';
 import { getSetting } from '../setting/services/setting.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
 export default async () => {
+  const paypalPaymentStatus = {
+    order: {
+      paymentStatus: {
+        paypal_authorized: {
+          name: 'Authorized',
+          badge: 'warning'
+        },
+        paypal_captured: {
+          name: 'Captured',
+          badge: 'success'
+        }
+      },
+      psoMapping: {
+        'paypal_authorized:*': 'processing',
+        'paypal_captured:*': 'processing',
+        'paypal_captured:delivered': 'completed'
+      }
+    }
+  };
+  config.util.setModuleDefaults('oms', paypalPaymentStatus);
+
   hookAfter('changePaymentStatus', async (order, orderID, status) => {
     if (status !== 'canceled') {
       return;
@@ -24,7 +45,7 @@ export default async () => {
     validator: async () => {
       const paypalConfig = getConfig('system.paypal', {});
       let paypalStatus;
-      if (paypalConfig.status) {
+      if (paypalConfig?.status) {
         paypalStatus = paypalConfig.status;
       } else {
         paypalStatus = await getSetting('paypalPaymentStatus', 0);

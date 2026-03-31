@@ -47,7 +47,7 @@ export default async (
       );
 
       if (responseData.data.status === 'COMPLETED') {
-        await updatePaymentStatus(order.order_id, 'authorized');
+        await updatePaymentStatus(order.order_id, 'paypal_authorized');
         // Add transaction data to database
         await insert('payment_transaction')
           .given({
