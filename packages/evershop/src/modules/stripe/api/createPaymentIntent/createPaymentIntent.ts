@@ -43,7 +43,7 @@ export default async (
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: smallestUnit.default(cart.grand_total, cart.currency),
+      amount: parseInt(smallestUnit(cart.grand_total, cart.currency), 10),
       currency: cart.currency,
       metadata: {
         cart_id,

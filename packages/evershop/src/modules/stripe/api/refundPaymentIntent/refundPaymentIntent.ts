@@ -69,7 +69,7 @@ export default async (request, response, next) => {
     // Refund
     const refund = await stripe.refunds.create({
       payment_intent: paymentTransaction.transaction_id,
-      amount: smallestUnit.default(amount, order.currency)
+      amount: parseInt(smallestUnit(amount, order.currency), 10)
     });
     const chargeId =
       typeof refund.charge === 'string'

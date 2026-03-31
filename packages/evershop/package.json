@@ -241,7 +241,7 @@
     "webpackbar": "^5.0.2",
     "winston": "^3.3.3",
     "yargs": "^17.7.2",
-    "zero-decimal-currencies": "^1.2.0"
+    "zero-decimal-currencies": "^1.6.0"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.5.1",
