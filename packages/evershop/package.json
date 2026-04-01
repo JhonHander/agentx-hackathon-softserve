@@ -107,6 +107,10 @@
       "import": "./dist/modules/cms/services/index.js",
       "types": "./dist/modules/cms/services/index.d.ts"
     },
+    "./promotion/services": {
+      "import": "./dist/modules/promotion/services/index.js",
+      "types": "./dist/modules/promotion/services/index.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
