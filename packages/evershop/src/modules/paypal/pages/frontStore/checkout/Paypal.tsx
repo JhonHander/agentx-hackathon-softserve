@@ -96,8 +96,14 @@ export default function PaypalMethod({
         const { checkout } = useCheckoutDispatch();
         const { loadingStates, orderPlaced } = useCheckout();
         const handleClick = async (e: React.MouseEvent) => {
-          e.preventDefault();
-          await checkout();
+          try {
+            e.preventDefault();
+            await checkout();
+          } catch (error) {
+            toast.error(
+              error.message || _('Failed to place order. Please try again.')
+            );
+          }
         };
 
         const isDisabled = loadingStates.placingOrder || orderPlaced;

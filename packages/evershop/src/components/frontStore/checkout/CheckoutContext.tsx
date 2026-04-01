@@ -258,17 +258,24 @@ export function CheckoutProvider({
 
     dispatch({ type: 'SET_PLACING_ORDER', payload: true });
 
-    const response = await retry(() =>
-      fetch(placeOrderApi, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart_id: cartId })
-      })
-    );
+    let response: Response;
+    try {
+      response = await retry(() =>
+        fetch(placeOrderApi, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart_id: cartId })
+        })
+      );
+    } catch (error) {
+      dispatch({ type: 'SET_PLACING_ORDER', payload: false });
+      throw error;
+    }
 
     const json = await response.json();
 
-    if (!response.ok) {
+    if (response.ok) {
+      dispatch({ type: 'SET_PLACING_ORDER', payload: false });
       throw new Error(json.error?.message || _('Failed to place order'));
     }
 
@@ -297,16 +304,23 @@ export function CheckoutProvider({
     disableForm();
     dispatch({ type: 'SET_PLACING_ORDER', payload: true });
 
-    const response = await retry(() =>
-      fetch(cartState.data?.checkoutApi, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cart_id: cartId,
-          ...checkoutDataRef.current
+    let response: Response;
+    try {
+      response = await retry(() =>
+        fetch(cartState.data?.checkoutApi, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cart_id: cartId,
+            ...checkoutDataRef.current
+          })
         })
-      })
-    );
+      );
+    } catch (error) {
+      enableForm();
+      dispatch({ type: 'SET_PLACING_ORDER', payload: false });
+      throw error;
+    }
 
     const json = await response.json();
 

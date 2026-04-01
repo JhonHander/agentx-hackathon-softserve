@@ -69,7 +69,9 @@ export default function CashOnDeliveryMethod({
           try {
             await checkout();
           } catch (error) {
-            toast.error(_('Failed to place order. Please try again.'));
+            toast.error(
+              error.message || _('Failed to place order. Please try again.')
+            );
           }
         };
 

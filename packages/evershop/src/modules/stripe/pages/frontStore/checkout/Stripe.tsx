@@ -384,14 +384,22 @@ export default function StripeMethod({
         const { checkout } = useCheckoutDispatch();
         const { loadingStates, orderPlaced } = useCheckout();
         const handleClick = async (e: React.MouseEvent) => {
-          e.preventDefault();
-          const validateStripe = (window as any)?.validateStripePayment;
-          if (validateStripe) {
-            const isValid = await validateStripe();
-            if (!isValid) return;
+          try {
+            e.preventDefault();
+            const validateStripe = (window as any)?.validateStripePayment;
+            if (validateStripe) {
+              const isValid = await validateStripe();
+              if (!isValid) return;
+            }
+            // If validation passed, proceed with order placement
+            await checkout();
+          } catch (error) {
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : _('An unexpected error occurred. Please try again.')
+            );
           }
-          // If validation passed, proceed with order placement
-          await checkout();
         };
 
         const isDisabled = loadingStates.placingOrder || orderPlaced;
