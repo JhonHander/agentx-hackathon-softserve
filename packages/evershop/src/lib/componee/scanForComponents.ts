@@ -10,7 +10,7 @@ function scanForComponents(path: string): string[] {
   return readdirSync(resolve(path), { withFileTypes: true })
     .filter(
       (dirent) =>
-        dirent.isFile() &&
+        (dirent.isFile() || dirent.isSymbolicLink()) &&
         /.js$/.test(dirent.name) &&
         /^[A-Z]/.test(dirent.name[0])
     )

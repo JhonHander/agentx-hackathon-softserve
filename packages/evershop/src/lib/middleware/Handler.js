@@ -123,6 +123,17 @@ export class Handler {
       const errorHandlers = middlewares.filter(
         (m) => m.middleware.length === 4
       );
+      if (goodHandlers.length === 0) {
+        const routeId = currentRoute?.id || 'unknown';
+        const routePath = currentRoute?.path || request.path || 'unknown';
+        const middlewareIds = middlewares.map((m) => m.id).join(', ');
+        next(
+          new Error(
+            `No middleware handlers were resolved for route '${routeId}' (${routePath}). Resolved middleware ids: [${middlewareIds}]`
+          )
+        );
+        return;
+      }
       let currentGood = 0;
       let currentError = -1;
       const eNext = function eNext() {
