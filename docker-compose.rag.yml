@@ -1,0 +1,64 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.15.4
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-storage:/qdrant/storage
+    networks:
+      - myevershop
+
+  rag-api:
+    build:
+      context: ./rag
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - qdrant
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: evershop_codebase
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      RAG_CHUNK_SIZE: ${RAG_CHUNK_SIZE:-1200}
+      RAG_CHUNK_OVERLAP: ${RAG_CHUNK_OVERLAP:-200}
+      RAG_MAX_FILE_BYTES: ${RAG_MAX_FILE_BYTES:-800000}
+      RAG_REPO_PATH: /workspace/repo
+    volumes:
+      - ./:/workspace/repo:ro
+    ports:
+      - "8008:8000"
+    networks:
+      - myevershop
+
+  rag-indexer:
+    build:
+      context: ./rag
+      dockerfile: Dockerfile
+    profiles:
+      - manual
+    depends_on:
+      - qdrant
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: evershop_codebase
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      RAG_CHUNK_SIZE: ${RAG_CHUNK_SIZE:-1200}
+      RAG_CHUNK_OVERLAP: ${RAG_CHUNK_OVERLAP:-200}
+      RAG_MAX_FILE_BYTES: ${RAG_MAX_FILE_BYTES:-800000}
+    volumes:
+      - ./:/workspace/repo:ro
+    command: ["python", "/app/src/index_codebase.py", "--repo-path", "/workspace/repo"]
+    networks:
+      - myevershop
+
+networks:
+  myevershop:
+    name: MyEverShop
+    driver: bridge
+
+volumes:
+  qdrant-storage:
