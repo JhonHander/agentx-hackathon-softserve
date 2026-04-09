@@ -2,7 +2,10 @@
 
 services:
   app:
-    image: evershop/evershop:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: evershop/evershop-hackathon:local
     restart: always
     environment:
       DB_HOST: database
@@ -10,12 +13,14 @@ services:
       DB_PASSWORD: postgres
       DB_USER: postgres
       DB_NAME: postgres
+      RAG_ORCHESTRATOR_MESSAGE_URL: http://rag-api:8000/agents/orchestrator/message
+      RAG_ORCHESTRATOR_TIMEOUT_MS: 30000
     networks:
       - myevershop
     depends_on:
       - database
     ports:
-      - 3000:3000
+      - "${APP_HOST_PORT:-3000}:3000"
   
   #The postgres database: 
   database:
@@ -28,7 +33,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     networks:
       - myevershop
 

@@ -2,22 +2,28 @@ import IncidentReporter from '@components/common/IncidentReporter.js';
 import React from 'react';
 
 interface IncidentReporterBlockProps {
-  reportIncidentApi: string;
+  reportIncidentApi?: string;
+  orchestratorMessageApi?: string;
 }
 
 export default function IncidentReporterBlock({
-  reportIncidentApi
+  reportIncidentApi,
+  orchestratorMessageApi
 }: IncidentReporterBlockProps) {
-  return <IncidentReporter apiUrl={reportIncidentApi} source="frontStore" />;
+  const resolvedReportIncidentApi = reportIncidentApi || '/api/incidents';
+  const resolvedOrchestratorApi =
+    orchestratorMessageApi || '/api/incidents/orchestrator/message';
+
+  return (
+    <IncidentReporter
+      apiUrl={resolvedReportIncidentApi}
+      orchestratorApiUrl={resolvedOrchestratorApi}
+      source="frontStore"
+    />
+  );
 }
 
 export const layout = {
   areaId: 'body',
   sortOrder: 95
 };
-
-export const query = `
-  query Query {
-    reportIncidentApi: url(routeId: "reportIncident")
-  }
-`;

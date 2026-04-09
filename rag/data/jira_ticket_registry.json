@@ -1,0 +1,16 @@
+{
+  "tickets": {
+    "IA-4": {
+      "incident_id": "04247f41-3a32-4d40-bb16-a6eb4e48a3c8",
+      "reporter_email": "nicolashoyostareas@gmail.com",
+      "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-4",
+      "resolved_notified": false
+    },
+    "IA-5": {
+      "incident_id": "1945f745-2286-4e52-bdfa-5b4ba09185cc",
+      "reporter_email": "nicolashoyostareas@gmail.com",
+      "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-5",
+      "resolved_notified": true
+    }
+  }
+}

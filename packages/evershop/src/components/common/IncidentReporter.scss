@@ -135,6 +135,37 @@
   color: #991b1b;
 }
 
+.incident-reporter-conversation {
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 0.45rem;
+  padding-right: 0.2rem;
+}
+
+.incident-turn {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+  white-space: pre-wrap;
+}
+
+.incident-turn.user {
+  justify-self: end;
+  background: #fee2e2;
+  color: #7f1d1d;
+  max-width: 85%;
+}
+
+.incident-turn.assistant {
+  justify-self: start;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border: 1px solid #dbeafe;
+  max-width: 95%;
+}
+
 .incident-reporter-composer {
   display: flex;
   gap: 0.5rem;

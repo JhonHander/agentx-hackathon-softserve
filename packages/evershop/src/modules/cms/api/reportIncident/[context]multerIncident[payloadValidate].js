@@ -33,7 +33,7 @@ const ALLOWED_MIME_TYPES = new Set([
 const upload = multer({
   storage,
   limits: {
-    files: 1,
+    files: 6,
     fileSize: MAX_FILE_SIZE_BYTES
   },
   fileFilter: (request, file, cb) => {
@@ -50,8 +50,8 @@ export default (request, response, next) => {
   // - attachment (expected for this endpoint contract)
   // - attachments (backward compatibility with the current chat UI)
   upload.fields([
-    { name: 'attachment', maxCount: 1 },
-    { name: 'attachments', maxCount: 1 }
+    { name: 'attachment', maxCount: 6 },
+    { name: 'attachments', maxCount: 6 }
   ])(request, response, (error) => {
     if (error) {
       response.status(INVALID_PAYLOAD).json({
