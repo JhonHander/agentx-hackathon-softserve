@@ -4,6 +4,22 @@ import os
 from typing import Any
 
 import httpx
+
+from langfuse_config import langfuse_is_enabled
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
+
+
 try:
     from jira_mcp_client import (
         create_jira_ticket_via_mcp,
@@ -101,7 +117,9 @@ def _create_jira_ticket_via_rest(
     url = f"{base_url}/rest/api/3/issue"
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
     with httpx.Client(timeout=timeout) as client:
-        response = client.post(url, json=payload, headers=headers, auth=(email, api_token))
+        response = client.post(
+            url, json=payload, headers=headers, auth=(email, api_token)
+        )
 
     if response.status_code >= 400:
         return {
@@ -124,6 +142,7 @@ def _create_jira_ticket_via_rest(
     }
 
 
+@observe(name="jira_create_ticket")
 def create_jira_ticket(
     incident: dict[str, Any],
     analysis: dict[str, Any],

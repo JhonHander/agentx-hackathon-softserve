@@ -5,6 +5,20 @@ from typing import Any
 
 import httpx
 
+from langfuse_config import langfuse_is_enabled
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
+
 
 def _candidate_incident_urls() -> list[str]:
     configured_url = (os.getenv("INCIDENT_API_URL") or "").strip()
@@ -33,6 +47,7 @@ def _candidate_recommendation_urls() -> list[str]:
     return urls
 
 
+@observe(name="incident_create_report")
 def create_incident_report(payload: dict[str, Any]) -> dict[str, Any]:
     timeout = float(os.getenv("INCIDENT_API_TIMEOUT_SECONDS", "20"))
 
@@ -95,6 +110,7 @@ def create_incident_report(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@observe(name="incident_create_recommendation")
 def create_incident_recommendation(payload: dict[str, Any]) -> dict[str, Any]:
     timeout = float(os.getenv("INCIDENT_API_TIMEOUT_SECONDS", "20"))
 
@@ -134,7 +150,9 @@ def create_incident_recommendation(payload: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"Could not reach Incident Recommendation API: {last_error}")
 
     if response is None:
-        raise RuntimeError("Incident recommendation API request failed without response")
+        raise RuntimeError(
+            "Incident recommendation API request failed without response"
+        )
 
     data = response.json()
     recommendation_id = (

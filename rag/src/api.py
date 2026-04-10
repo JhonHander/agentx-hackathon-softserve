@@ -8,6 +8,21 @@ from fastapi import FastAPI, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
+from langfuse_config import flush_langfuse, langfuse_is_enabled
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
+
+
 PLACEHOLDER_API_KEYS = {"TU_API_KEY", "your_openai_api_key", "YOUR_OPENAI_API_KEY"}
 
 
@@ -41,6 +56,12 @@ from rag_config import RagConfig
 from retriever import search_code_chunks
 
 app = FastAPI(title="Codebase RAG API", version="1.0.0")
+
+
+@app.on_event("shutdown")
+def _shutdown_langfuse() -> None:
+    """Flush any remaining Langfuse traces before the server shuts down."""
+    flush_langfuse()
 
 
 class SearchRequest(BaseModel):
@@ -85,7 +106,10 @@ def _parse_bool(value: str | None, *, default: bool = False) -> bool:
 
 
 def _jira_done_statuses() -> set[str]:
-    raw = (os.getenv("JIRA_DONE_STATUS_NAMES") or "done,resolved,closed,finalizado,terminado").strip()
+    raw = (
+        os.getenv("JIRA_DONE_STATUS_NAMES")
+        or "done,resolved,closed,finalizado,terminado"
+    ).strip()
     return {item.strip().lower() for item in raw.split(",") if item.strip()}
 
 
@@ -157,7 +181,9 @@ def health() -> dict[str, Any]:
     except Exception as exc:
         qdrant_error = str(exc)
     jira_mode = (os.getenv("JIRA_MODE") or "auto").strip().lower()
-    jira_transport = (os.getenv("JIRA_MCP_TRANSPORT") or "streamable_http").strip().lower()
+    jira_transport = (
+        (os.getenv("JIRA_MCP_TRANSPORT") or "streamable_http").strip().lower()
+    )
     jira_rest_configured = bool(
         os.getenv("JIRA_BASE_URL")
         and os.getenv("JIRA_EMAIL")
@@ -166,7 +192,10 @@ def health() -> dict[str, Any]:
     )
     jira_mcp_configured = bool(
         (jira_transport == "stdio" and os.getenv("JIRA_MCP_COMMAND"))
-        or (jira_transport != "stdio" and (os.getenv("JIRA_MCP_URL") or "https://mcp.atlassian.com/v1/mcp"))
+        or (
+            jira_transport != "stdio"
+            and (os.getenv("JIRA_MCP_URL") or "https://mcp.atlassian.com/v1/mcp")
+        )
     )
     jira_webhook_enabled = _parse_bool(os.getenv("JIRA_WEBHOOK_ENABLED"), default=True)
 
@@ -224,10 +253,15 @@ def reindex(request: ReindexRequest) -> dict[str, Any]:
     return result
 
 
+@observe(name="api_orchestrator_message")
+def _orchestrator_message_observed(payload: dict[str, Any]) -> dict[str, Any]:
+    return handle_message(payload)
+
+
 @app.post("/agents/orchestrator/message")
 def orchestrator_message(request: OrchestratorMessageRequest) -> dict[str, Any]:
     try:
-        return handle_message(request.model_dump())
+        return _orchestrator_message_observed(request.model_dump())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -242,8 +276,8 @@ def orchestrator_reset(request: OrchestratorResetRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/jira/webhook")
-def jira_webhook(
+@observe(name="api_jira_webhook")
+def _jira_webhook_observed(
     payload: dict[str, Any],
     x_jira_webhook_token: str | None = Header(default=None),
     token: str | None = Query(default=None),
@@ -261,7 +295,10 @@ def jira_webhook(
         return {"ok": True, "skipped": True, "reason": "Issue key not found"}
 
     status_name = (_extract_status_name(payload) or "").strip()
-    is_done = _status_category_is_done(payload) or status_name.lower() in _jira_done_statuses()
+    is_done = (
+        _status_category_is_done(payload)
+        or status_name.lower() in _jira_done_statuses()
+    )
     if not is_done:
         return {
             "ok": True,
@@ -309,3 +346,12 @@ def jira_webhook(
         "status": status_name or None,
         "notification": send_result,
     }
+
+
+@app.post("/jira/webhook")
+def jira_webhook(
+    payload: dict[str, Any],
+    x_jira_webhook_token: str | None = Header(default=None),
+    token: str | None = Query(default=None),
+) -> dict[str, Any]:
+    return _jira_webhook_observed(payload, x_jira_webhook_token, token)

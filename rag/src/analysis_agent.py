@@ -7,9 +7,22 @@ from pathlib import Path
 from typing import Any
 
 from langchain_openai import ChatOpenAI
+from langfuse_config import langfuse_is_enabled
 from pydantic import BaseModel, Field
 from rag_config import RagConfig
 from retriever import search_code_chunks
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
 
 
 class FixSuggestion(BaseModel):
@@ -217,6 +230,7 @@ def _fallback_suggestions(probable_files: list[dict[str, Any]]) -> list[dict[str
     return output
 
 
+@observe(name="analysis_synthesize_llm", as_type="generation")
 def _synthesize_with_llm(
     incident: dict[str, Any],
     query: str,
@@ -233,12 +247,12 @@ Objetivo:
 - Ser prudente: si no hay certeza, dilo.
 
 Incidente:
-description: {incident.get('description', '')}
-expected_result: {incident.get('expected_result', '')}
-actual_result: {incident.get('actual_result', '')}
-steps_to_reproduce: {incident.get('steps_to_reproduce', '')}
-source: {incident.get('source', '')}
-page_url: {incident.get('page_url', '')}
+description: {incident.get("description", "")}
+expected_result: {incident.get("expected_result", "")}
+actual_result: {incident.get("actual_result", "")}
+steps_to_reproduce: {incident.get("steps_to_reproduce", "")}
+source: {incident.get("source", "")}
+page_url: {incident.get("page_url", "")}
 
 Query RAG usada:
 {query}
@@ -280,6 +294,7 @@ Devuelve JSON con este esquema:
     return summary, suggestions, str(getattr(llm, "model_name", "unknown"))
 
 
+@observe(name="analysis_rag_analysis")
 def run_rag_analysis(incident: dict[str, Any], config: RagConfig) -> dict[str, Any]:
     top_k = int(os.getenv("ORCHESTRATOR_RAG_TOP_K", "8"))
     query = _build_query(incident)
