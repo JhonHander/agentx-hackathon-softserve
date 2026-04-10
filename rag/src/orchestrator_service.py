@@ -12,12 +12,30 @@ from analysis_agent import run_rag_analysis
 from incident_client import create_incident_recommendation, create_incident_report
 from jira_agent import create_jira_ticket
 from jira_ticket_registry import register_ticket_contact
+from langfuse_config import (
+    get_langfuse_handler,
+    langfuse_is_enabled,
+    langfuse_session_metadata,
+)
 from reporter_notification import send_ticket_opened_email
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from pydantic import BaseModel
 from rag_config import RagConfig
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
+
 
 EMAIL_REGEX = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 PLACEHOLDER_API_KEYS = {"TU_API_KEY", "your_openai_api_key", "YOUR_OPENAI_API_KEY"}
@@ -153,7 +171,9 @@ def _history_text(session: SessionState, limit: int = 8) -> str:
 def _attachment_context_text(draft: IncidentDraft) -> str:
     if not draft.attachments_base64:
         return "No attachments."
-    names = [str(item.get("name") or "attachment.bin") for item in draft.attachments_base64]
+    names = [
+        str(item.get("name") or "attachment.bin") for item in draft.attachments_base64
+    ]
     notes = draft.attachment_notes[-3:]
     note_text = "\n".join(notes) if notes else "No visual analysis available."
     return (
@@ -196,10 +216,15 @@ def _is_low_signal_description(description: str) -> bool:
         "reportar un bug",
         "incidente",
     ]
-    return len(normalized) < 40 and any(marker in normalized for marker in generic_markers)
+    return len(normalized) < 40 and any(
+        marker in normalized for marker in generic_markers
+    )
 
 
-def _run_conversational_turn(session: SessionState, user_message: str) -> ConversationalTurn:
+@observe(name="orchestrator_conversational_turn", as_type="generation")
+def _run_conversational_turn(
+    session: SessionState, user_message: str
+) -> ConversationalTurn:
     prompt = f"""
 You are an ecommerce incident orchestrator.
 Always reply in natural, concise English.
@@ -273,6 +298,7 @@ def _merge_turn(draft: IncidentDraft, turn: ConversationalTurn) -> None:
         draft.reporter_email = turn.reporter_email.strip().lower()
 
 
+@observe(name="orchestrator_infer_missing_details", as_type="generation")
 def _infer_missing_details(draft: IncidentDraft) -> None:
     if (
         draft.expected_result.strip()
@@ -342,6 +368,7 @@ Return ONLY JSON:
         )
 
 
+@observe(name="orchestrator_classify_priority", as_type="generation")
 def _classify_priority_with_llm(draft: IncidentDraft) -> tuple[str, str]:
     prompt = f"""
 Classify incident priority for an ecommerce issue.
@@ -391,6 +418,7 @@ def _prepare_for_save(draft: IncidentDraft) -> None:
     draft.priority_reason = priority_reason
 
 
+@observe(name="orchestrator_save_and_analyze")
 def _save_and_analyze(session: SessionState) -> dict[str, Any]:
     incident_payload = {
         "description": session.draft.description,
@@ -469,7 +497,9 @@ def _save_and_analyze(session: SessionState) -> dict[str, Any]:
         "summary": "Automatic technical analysis could not be generated.",
         "suggested_fixes": [],
     }
-    jira_result = create_jira_ticket(incident_payload, analysis_for_jira, session.incident_id)
+    jira_result = create_jira_ticket(
+        incident_payload, analysis_for_jira, session.incident_id
+    )
 
     if jira_result and jira_result.get("created"):
         issue_key = str(jira_result.get("issue_key") or "").strip()
@@ -506,9 +536,15 @@ def _save_and_analyze(session: SessionState) -> dict[str, Any]:
             "status": "completed" if analysis_data else "failed",
             "query": analysis_data.get("query") if analysis_data else None,
             "summary": analysis_data.get("summary") if analysis_data else None,
-            "suggested_fixes": analysis_data.get("suggested_fixes") if analysis_data else [],
-            "retrieval_mode": analysis_data.get("retrieval_mode") if analysis_data else None,
-            "retrieval_warning": analysis_data.get("retrieval_warning") if analysis_data else None,
+            "suggested_fixes": analysis_data.get("suggested_fixes")
+            if analysis_data
+            else [],
+            "retrieval_mode": analysis_data.get("retrieval_mode")
+            if analysis_data
+            else None,
+            "retrieval_warning": analysis_data.get("retrieval_warning")
+            if analysis_data
+            else None,
             "recommendation_id": recommendation_id,
             "error": analysis_error or recommendation_error,
         },
@@ -525,7 +561,9 @@ def _normalize_attachments(raw_attachments: Any) -> list[dict[str, Any]]:
     for item in raw_attachments[:6]:
         if not isinstance(item, dict):
             continue
-        name = str(item.get("name") or f"attachment-{len(normalized) + 1}.bin").strip()[:255]
+        name = str(item.get("name") or f"attachment-{len(normalized) + 1}.bin").strip()[
+            :255
+        ]
         mime_type = (
             str(item.get("type") or item.get("mime_type") or "application/octet-stream")
             .strip()
@@ -535,7 +573,9 @@ def _normalize_attachments(raw_attachments: Any) -> list[dict[str, Any]]:
         if not isinstance(raw_base64, str) or not raw_base64.strip():
             continue
         payload = raw_base64.strip()
-        data_url_match = re.match(r"^data:([^;]+);base64,(.+)$", payload, flags=re.IGNORECASE)
+        data_url_match = re.match(
+            r"^data:([^;]+);base64,(.+)$", payload, flags=re.IGNORECASE
+        )
         if data_url_match:
             mime_type = mime_type or data_url_match.group(1).strip().lower()
             payload = data_url_match.group(2).strip()
@@ -558,6 +598,7 @@ def _normalize_attachments(raw_attachments: Any) -> list[dict[str, Any]]:
     return normalized[:6]
 
 
+@observe(name="orchestrator_analyze_images", as_type="generation")
 def _analyze_image_attachments(
     attachments: list[dict[str, Any]], user_message: str
 ) -> str | None:
@@ -599,8 +640,10 @@ def _analyze_image_attachments(
         )
 
     try:
-        parsed = _model().with_structured_output(ImageInsights).invoke(
-            [HumanMessage(content=content)]
+        parsed = (
+            _model()
+            .with_structured_output(ImageInsights)
+            .invoke([HumanMessage(content=content)])
         )
     except Exception:
         return None
@@ -615,6 +658,7 @@ def _analyze_image_attachments(
     return "\n".join(chunks) if chunks else None
 
 
+@observe(name="orchestrator_agent_node")
 def _agent_node(state: GraphState) -> GraphState:
     session = state["session"]
     user_message = state["user_message"]
@@ -630,9 +674,14 @@ def _agent_node(state: GraphState) -> GraphState:
         }
 
     _merge_turn(session.draft, turn)
-    if _is_low_signal_description(session.draft.description) and session.draft.attachment_notes:
+    if (
+        _is_low_signal_description(session.draft.description)
+        and session.draft.attachment_notes
+    ):
         session.draft.description = session.draft.attachment_notes[-1].split("\n")[0]
-    if session.draft.reporter_email and not EMAIL_REGEX.match(session.draft.reporter_email):
+    if session.draft.reporter_email and not EMAIL_REGEX.match(
+        session.draft.reporter_email
+    ):
         session.draft.reporter_email = None
 
     missing = _missing_fields(session.draft)
@@ -663,6 +712,7 @@ def _agent_node(state: GraphState) -> GraphState:
     }
 
 
+@observe(name="orchestrator_save_node")
 def _save_node(state: GraphState) -> GraphState:
     session = state["session"]
 
@@ -720,6 +770,7 @@ def _build_graph():
 _GRAPH = _build_graph()
 
 
+@observe(name="orchestrator_handle_message")
 def handle_message(request: dict[str, Any]) -> dict[str, Any]:
     raw_message = str(request.get("message") or "")
     message = _sanitize_for_llm(raw_message)
@@ -793,10 +844,18 @@ def handle_message(request: dict[str, Any]) -> dict[str, Any]:
             )
         if incoming_attachments:
             names = ", ".join(
-                [str(item.get("name") or "attachment.bin") for item in incoming_attachments]
+                [
+                    str(item.get("name") or "attachment.bin")
+                    for item in incoming_attachments
+                ]
             )
             user_turn_text = f"{user_turn_text}\nAttachments: {names}"
         session.turns.append({"role": "user", "text": user_turn_text})
+
+        invoke_config: dict[str, Any] = {}
+        langfuse_handler = get_langfuse_handler()
+        if langfuse_handler is not None:
+            invoke_config["callbacks"] = [langfuse_handler]
 
         graph_state = _GRAPH.invoke(
             {
@@ -806,7 +865,8 @@ def handle_message(request: dict[str, Any]) -> dict[str, Any]:
                 "assistant_message": "",
                 "result": None,
                 "error": None,
-            }
+            },
+            config=invoke_config or None,
         )
 
         assistant_message = (
@@ -824,7 +884,11 @@ def handle_message(request: dict[str, Any]) -> dict[str, Any]:
             }
 
         missing = _missing_fields(session.draft)
-        status = "ready_to_submit" if session.stage == "awaiting_confirmation" else "collecting"
+        status = (
+            "ready_to_submit"
+            if session.stage == "awaiting_confirmation"
+            else "collecting"
+        )
         return {
             "session_id": session.id,
             "status": status,

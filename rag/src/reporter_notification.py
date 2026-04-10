@@ -5,6 +5,20 @@ import smtplib
 from email.message import EmailMessage
 from typing import Any
 
+from langfuse_config import langfuse_is_enabled
+
+if langfuse_is_enabled():
+    from langfuse import observe
+else:
+
+    def observe(**_kwargs):  # type: ignore[misc]
+        """No-op decorator when Langfuse is disabled."""
+
+        def _wrapper(func):
+            return func
+
+        return _wrapper
+
 
 def _parse_bool(value: str | None, *, default: bool = False) -> bool:
     if value is None:
@@ -154,6 +168,7 @@ def _send_smtp_message(
     }
 
 
+@observe(name="notification_ticket_opened")
 def send_ticket_opened_email(
     reporter_email: str,
     incident_id: Any,
@@ -192,6 +207,7 @@ def send_ticket_opened_email(
     )
 
 
+@observe(name="notification_ticket_resolved")
 def send_ticket_resolved_email(
     reporter_email: str,
     incident_id: Any,
