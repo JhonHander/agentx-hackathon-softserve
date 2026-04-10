@@ -11,6 +11,24 @@
       "reporter_email": "nicolashoyostareas@gmail.com",
       "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-5",
       "resolved_notified": true
+    },
+    "IA-9": {
+      "incident_id": "bc0c9a7c-e02f-4770-b73d-39d877aae12f",
+      "reporter_email": "nicolashoyostareas@gmail.com",
+      "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-9",
+      "resolved_notified": false
+    },
+    "IA-10": {
+      "incident_id": "042cf047-7d84-4db6-a91b-0b7632609865",
+      "reporter_email": "nicolashoyostareas@gmail.com",
+      "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-10",
+      "resolved_notified": false
+    },
+    "IA-11": {
+      "incident_id": "138a0e6f-e52a-4287-ac92-fb37b901a624",
+      "reporter_email": "nicolashoyostareas@gmail.com",
+      "issue_url": "https://nicolashoyosdev.atlassian.net/browse/IA-11",
+      "resolved_notified": false
     }
   }
 }
