@@ -1,107 +1,199 @@
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 <p align="center">
-<img width="60" height="68" alt="EverShop Logo" src="https://raw.githubusercontent.com/evershopcommerce/evershop/dev/.github/images/logo-green.png"/>
+  <img width="120" height="120" alt="EverShop AI Logo" src="./public/evershop-ai-logo.png"/>
 </p>
-<p align="center">
-  <h1 align="center">EverShop</h1>
-</p>
-<h4 align="center">
-    <a href="https://evershop.io/docs/development/getting-started/introduction">Documentation</a> |
-    <a href="https://demo.evershop.io/">Demo</a>
-</h4>
+
+<h1 align="center">Incident Triage Copilot for EverShop</h1>
 
 <p align="center">
-  <img src="https://github.com/evershopcommerce/evershop/actions/workflows/build_test.yml/badge.svg" alt="Github Action"> <a href="https://twitter.com/evershopjs"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/evershopjs?style=social"></a> <a href="https://discord.gg/GSzt7dt7RM"><img src="https://img.shields.io/discord/757179260417867879?label=discord" alt="Discord"></a> <a href="https://opensource.org/licenses/GPL-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License"></a>
+  Hackathon update: AI-assisted incident intake, triage, RAG code analysis, Jira creation, and reporter notifications.
 </p>
 
 <p align="center">
-<img alt="EverShop" width="950" src="https://raw.githubusercontent.com/evershopcommerce/evershop/dev/.github/images/banner.png"/>
+  <img alt="Hackathon" src="https://img.shields.io/badge/Hackathon-Update-0ea5a5?style=for-the-badge" />
+  <img alt="EverShop" src="https://img.shields.io/badge/EverShop-Node.js%20%2B%20React-16a34a?style=for-the-badge" />
+  <img alt="FastAPI" src="https://img.shields.io/badge/RAG%20API-FastAPI-0f766e?style=for-the-badge" />
+  <img alt="Qdrant" src="https://img.shields.io/badge/Vector%20Store-Qdrant-dc2626?style=for-the-badge" />
+  <img alt="Jira" src="https://img.shields.io/badge/Ticketing-Jira-1d4ed8?style=for-the-badge" />
+  <img alt="Docker" src="https://img.shields.io/badge/Runtime-Docker%20Compose-2563eb?style=for-the-badge" />
 </p>
 
-## Introduction
+<p align="center">
+  <img alt="EverShop AI Banner" width="950" src="./public/banner-evershop-ai.png"/>
+</p>
 
-EverShop is a modern, TypeScript-first eCommerce platform built with GraphQL and React. Designed for developers, it offers essential commerce features in a modular, fully customizable architecture—perfect for building tailored shopping experiences with confidence and speed.
+## Project Summary
 
-## Installation Using Docker
+This project extends EverShop with an AI-assisted incident intake and triage workflow.
 
+Users can report incidents from the storefront, and an orchestrator agent:
+- gathers the minimum required data conversationally,
+- validates reporter email,
+- confirms details with the user,
+- saves the incident,
+- runs technical codebase analysis (RAG),
+- creates a Jira ticket,
+- and sends reporter notifications.
 
-You can get started with EverShop in minutes by using the Docker image. The Docker image is a great way to get started with EverShop without having to worry about installing dependencies or configuring your environment.
+The user-facing flow is intentionally minimal and safe:
+- English-only responses,
+- no exposure of internal priority, retrieval, or tool outputs,
+- final acknowledgement confirms the issue is being worked on.
+
+> [!IMPORTANT]
+> This repository is a hackathon-focused EverShop update, optimized for fast demoability and clear end-to-end incident flow validation.
+
+> [!NOTE]
+> The app response shown to end users stays concise, while deeper technical analysis happens in the backend pipeline.
+
+## Architecture Overview
+
+Main runtime components:
+- app: EverShop Node.js web application (UI + API proxy route).
+- database: PostgreSQL for EverShop data.
+- qdrant: Vector store for code chunks.
+- rag-api: FastAPI service hosting orchestrator, RAG search, and webhook endpoints.
+- rag-indexer: One-shot indexing job for repository ingestion.
+
+High-level request flow:
+1. User submits incident through EverShop UI.
+2. EverShop app proxies request to rag-api orchestrator endpoint.
+3. Orchestrator collects and validates incident details and asks for confirmation.
+4. On confirmation, incident is persisted, RAG analysis runs, Jira ticket is created, and email notifications are triggered.
+5. User gets concise confirmation message.
+
+Relevant compose files:
+- docker-compose.yml: base app + database.
+- docker-compose.rag.yml: qdrant + rag-api + rag-indexer overlay.
+
+> [!TIP]
+> For quick demos, keep the base stack up and launch the RAG overlay only when validating triage and analysis flows.
+
+## Setup Instructions
+
+Prerequisites:
+- Docker + Docker Compose
+- Optional local Python 3.11+ (for non-container FastAPI runs)
+
+1. Copy environment template:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/evershopcommerce/evershop/main/docker-compose.yml > docker-compose.yml
-docker compose up -d
+cp rag/.env.example .env
 ```
 
-For the full installation guide, please refer to our [Installation guide](https://evershop.io/docs/development/getting-started/installation-guide).
+2. Fill required secrets in .env:
+- OPENAI_API_KEY
+- JIRA_* credentials
+- SMTP_* credentials (if notifications are enabled)
 
-## Documentation
+3. Start stack with RAG overlay:
 
-- [Installation guide](https://evershop.io/docs/development/getting-started/installation-guide).
+```bash
+docker compose -f docker-compose.yml -f docker-compose.rag.yml up -d --build
+```
 
-- [Extension development](https://evershop.io/docs/development/module/create-your-first-extension).
+4. Optional but recommended: build code index:
 
-- [Theme development](https://evershop.io/docs/development/theme/theme-overview).
+```bash
+docker compose -f docker-compose.yml -f docker-compose.rag.yml --profile manual run --rm rag-indexer
+```
 
+5. Verify health:
+- GET http://localhost:8008/health
+- Open app at http://localhost:3000
 
-## Demo
+## How To Run
 
-Explore our demo store.
+<details>
+  <summary><strong>Quick Start (recommended for demo)</strong></summary>
 
-<p align="left">
-  <a href="https://demo.evershop.io/admin" target="_blank">
-    <img alt="evershop-backend-demo" height="35" alt="EverShop Admin Demo" src="https://raw.githubusercontent.com/evershopcommerce/evershop/dev/.github/images/evershop-demo-back.png"/>
-  </a>
-  <a href="https://demo.evershop.io/" target="_blank">
-    <img alt="evershop-store-demo" height="35" alt="EverShop Store Demo" src="https://raw.githubusercontent.com/evershopcommerce/evershop/dev/.github/images/evershop-demo-front.png"/>
-  </a>
-</p>
-<b>Demo user:</b>
+  <br/>
 
-Email: demo@evershop.io<br/>
-Password: 123456
+  ```bash
+  cp rag/.env.example .env
+  # Fill OPENAI_API_KEY, JIRA_* and SMTP_* secrets in .env
 
-## Support
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml up -d --build
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml --profile manual run --rm rag-indexer
+  ```
 
-If you like my work, feel free to:
+  Endpoints:
+  - App: http://localhost:3000
+  - RAG API health: http://localhost:8008/health
+  - Langfuse UI: http://localhost:3010
+</details>
 
-- ⭐ this repository. It helps.
-- [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)][tweet] about EverShop. Thank you!
+<details>
+  <summary><strong>Run Base EverShop Only (without RAG overlay)</strong></summary>
 
-[tweet]: https://twitter.com/intent/tweet?url=https%3A%2F%2Fgithub.com%2Fevershopcommerce%2Fevershop&text=Awesome%20React%20Ecommerce%20Project&hashtags=react,ecommerce,expressjs,graphql
+  <br/>
 
-## Contributing
+  ```bash
+  docker compose -f docker-compose.yml up -d --build
+  ```
 
-EverShop is an open-source project. We are committed to a fully transparent development process and appreciate highly any contributions. Whether you are helping us fix bugs, proposing new features, improving our documentation or spreading the word - we would love to have you as part of the EverShop community.
+  Use this mode when you only need storefront/admin validation without AI triage pipeline.
+</details>
 
-### Ask a question about EverShop
+<details>
+  <summary><strong>Operational Commands</strong></summary>
 
-You can ask questions, and participate in discussions about EverShop-related topics in the EverShop Discord channel.
+  <br/>
 
-<a href="https://discord.gg/GSzt7dt7RM"><img src="https://raw.githubusercontent.com/evershopcommerce/evershop/dev/.github/images/discord_banner_github.svg" /></a>
+  ```bash
+  # Follow logs for main services
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml logs -f app rag-api qdrant
 
-### Create a bug report
+  # Stop full stack
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml down
 
-If you see an error message or run into an issue, please [create bug report](https://github.com/evershopcommerce/evershop/issues/new). This effort is valued and it will help all EverShop users.
+  # Rebuild only rag-api service
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml up -d --build rag-api
+  ```
 
+  ```bash
+  # Reindex when repository code changes significantly
+  docker compose -f docker-compose.yml -f docker-compose.rag.yml --profile manual run --rm rag-indexer
+  ```
+</details>
 
-### Submit a feature request
+<details>
+  <summary><strong>Demo Flow Checklist</strong></summary>
 
-If you have an idea, or you're missing a capability that would make development easier and more robust, please [Submit feature request](https://github.com/evershopcommerce/evershop/issues/new).
+  <br/>
 
-If a similar feature request already exists, don't forget to leave a "+1".
-If you add some more information such as your thoughts and vision about the feature, your comments will be embraced warmly :)
+  1. Open the storefront and submit an incident.
+  2. Complete the conversational intake until confirmation is requested.
+  3. Confirm submission and wait for acknowledgement.
+  4. Verify orchestrator processing in rag-api logs.
+  5. Validate created ticket/notification behavior with configured integrations.
+</details>
 
+> [!WARNING]
+> If OPENAI_API_KEY or Jira credentials are missing, incident persistence may still work but automated analysis and ticket creation can fail.
 
-Please refer to our [Contribution Guidelines](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md).
+> [!CAUTION]
+> Running without indexing will reduce analysis quality because RAG retrieval has limited or no code context.
 
-## 🚀 The Future of EverShop
+## Repository Deliverables
 
-EverShop is seeing rapid organic growth and strong adoption from the developer community. We are now scaling our operations and building **EverShop Cloud**.
+This repository includes required handoff artifacts for the hackathon track:
 
-If you are a strategic investor interested in the future of Node.js commerce and our mission to set a new standard for modern eCommerce, we’d love to share our vision and roadmap with you.
+- README.md
+- docker-compose.yml
+- docker-compose.rag.yml
+- rag/.env.example
+- LICENSE
 
-📩 **Get in touch:** support@evershop.io
+Expected in final handoff package:
 
-## License
+- AGENTS_USE.md
+- SCALING.md
+- QUICKGUIDE.md
+- .env.example (root-level)
 
-[GPL-3.0 License](https://github.com/evershopcommerce/evershop/blob/main/LICENSE)
+## Notes
+
+- The orchestrator includes prompt-level hardening and safety constraints to reduce risky instruction-following patterns.
+- The post-confirmation execution pipeline is designed to run asynchronously so user-facing latency stays low.
+- Hackathon emphasis: concise UX in storefront, technical depth in backend services.
